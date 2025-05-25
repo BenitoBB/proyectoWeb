@@ -1,0 +1,12 @@
+pages/
+├── index.js          ← Entrada principal (home)
+├── admin/
+│   └── page.js       ← Panel admin
+├── jugador/
+│   └── page.js       ← Vista jugador
+├── registro/
+│   └── page.js       ← Vista para registrar nombre
+├── api/
+│   ├── game.js       ← API de juegos
+│   ├── players.js    ← API jugadores
+│   └── questions.js  ← API preguntas
