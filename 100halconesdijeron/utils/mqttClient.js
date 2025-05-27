@@ -13,6 +13,7 @@ export function useMQTT(topic, onMessageCallback) {
     if (!globalClient) {
       const clientId = 'client-' + Math.random().toString(16).slice(2);
       globalClient = new Paho.Client('localhost', 9001, '/', clientId);
+      window.globalClient = globalClient; // 👈 necesario para acceso global
 
       globalClient.onConnectionLost = () => console.warn('MQTT: conexión perdida');
 
@@ -26,7 +27,10 @@ export function useMQTT(topic, onMessageCallback) {
       globalClient.connect({
         onSuccess: () => {
           console.log('MQTT: conectado');
-          Object.keys(subscribers).forEach((t) => globalClient.subscribe(t));
+          Object.keys(subscribers).forEach((t) => {
+            globalClient.subscribe(t);
+            console.log('🟢 Suscrito a:', t);
+          });
         },
         onFailure: (err) => console.error('MQTT error al conectar', err)
       });
@@ -35,9 +39,10 @@ export function useMQTT(topic, onMessageCallback) {
     // Registrar el nuevo suscriptor
     if (!subscribers[topicRef.current]) {
       subscribers[topicRef.current] = [];
-      if (globalClient && globalClient.isConnected()) {
-        globalClient.subscribe(topicRef.current);
-      }
+    }
+
+    if (globalClient && globalClient.isConnected()) {
+      globalClient.subscribe(topicRef.current);
     }
 
     subscribers[topicRef.current].push(onMessageCallback);
@@ -59,6 +64,7 @@ export function useMQTT(topic, onMessageCallback) {
 
   return { sendMessage };
 }
+
 export function useMQTTClient() {
   return globalClient;
 }

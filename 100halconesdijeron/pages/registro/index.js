@@ -6,11 +6,12 @@ import { useState } from 'react';
 export default function RegistroPage() {
   const router = useRouter();
   const [name, setName] = useState('');
+  const [rol, setRol] = useState('jugadorA');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (name.trim()) { 
-      router.push(`/jugador?name=${encodeURIComponent(name)}`); 
+    if (name.trim()) {
+      router.push(`/jugador?name=${encodeURIComponent(name)}&rol=${rol}`);
     }
   };
 
@@ -26,6 +27,14 @@ export default function RegistroPage() {
           required
           style={styles.input}
         />
+        <select
+          value={rol}
+          onChange={e => setRol(e.target.value)}
+          style={styles.input}
+        >
+          <option value="jugadorA">Jugador A</option>
+          <option value="jugadorB">Jugador B</option>
+        </select>
         <button type="submit" style={styles.button}>Entrar al juego</button>
       </form>
     </div>

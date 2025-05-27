@@ -13,13 +13,28 @@ export default function HomePage() {
       <p style={styles.description}>Un juego interactivo en tiempo real con WebSocket + MQTT</p>
 
       <div style={styles.buttonContainer}>
-        <button style={styles.button} onClick={() => router.push('/registro')}>
-          Ingresar como Jugador
+        <button
+          style={styles.button}
+          onClick={() => router.push('/jugador?name=JugadorA&rol=jugadorA')}
+        >
+          Ingresar como Jugador A
         </button>
-        <button style={{ ...styles.button, backgroundColor: '#28a745' }} onClick={() => router.push('/admin')}>
+        <button
+          style={styles.button}
+          onClick={() => router.push('/jugador?name=JugadorB&rol=jugadorB')}
+        >
+          Ingresar como Jugador B
+        </button>
+        <button
+          style={{ ...styles.button, backgroundColor: '#28a745' }}
+          onClick={() => router.push('/admin')}
+        >
           Entrar como Administrador
         </button>
-        <button style={{ ...styles.button, backgroundColor: '#6c757d' }} onClick={() => router.push('/admin/estadisticas')}>
+        <button
+          style={{ ...styles.button, backgroundColor: '#6c757d' }}
+          onClick={() => router.push('/admin/estadisticas')}
+        >
           Ver estadísticas
         </button>
       </div>

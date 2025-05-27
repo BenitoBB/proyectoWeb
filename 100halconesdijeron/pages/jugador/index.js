@@ -1,4 +1,4 @@
-//pages/jugador/page.js
+//pages/jugador/index.js
 
 'use client';
 
@@ -10,17 +10,17 @@ import JugadorRespuesta from '@/components/JugadorRespuesta';
 import { useMQTT } from '@/utils/mqttClient';
 import { TOPICS } from '@/utils/constants';
 import PuntajePanel from '@/components/PuntajePanel';
-import JuegoFinalizado from '@/components/JuegoFinalizado'; // Asegúrate de tener este componente
+import JuegoFinalizado from '@/components/JuegoFinalizado';
 
 export default function JugadorPage() {
-  const params = useSearchParams();
-  const name = params.get('name') || 'Jugador';
+  const searchParams = useSearchParams();
+  const name = searchParams.get('name') || 'Jugador';
+  const rol = searchParams.get('rol');
 
-  // Detección del rol
-  const nameLower = name.toLowerCase();
-  let rol = 'jugadorB';
-  if (nameLower.includes('a')) rol = 'jugadorA';
-  if (nameLower.includes('admin')) rol = 'admin';
+  if (!rol || !['jugadorA', 'jugadorB'].includes(rol)) {
+    alert('Debes especificar el rol: jugadorA o jugadorB');
+    return null;
+  }
 
   const [listo, setListo] = useState(false);
   const [juegoFinalizado, setJuegoFinalizado] = useState(false);
@@ -39,9 +39,8 @@ export default function JugadorPage() {
     setPuntajeFinal(data);
   });
 
-  // Escucha para reinicio de juego
   useMQTT(TOPICS.NUEVO_JUEGO, () => {
-    location.reload(); // O puedes hacer reset de estado manualmente
+    location.reload();
   });
 
   return (
