@@ -4,7 +4,7 @@
     "fecha_inicio": "2025-05-27T17:00:00",
     "finalizado": false,
     "puntaje": {
-      "jugadorA": 0,
+      "jugadorA": 20,
       "jugadorB": 0
     },
     "rondas": [
@@ -221,6 +221,43 @@
       },
       {
         "numero": 7,
+        "pregunta": "¿Qué haces en tu cumpleaños?",
+        "respuestas_validas": [
+          {
+            "texto": "Comer pastel",
+            "puntos": 40,
+            "sinonimos": [
+              "pastel",
+              "tarta",
+              "pastelito"
+            ]
+          },
+          {
+            "texto": "Recibir regalos",
+            "puntos": 30,
+            "sinonimos": [
+              "regalos",
+              "sorpresas"
+            ]
+          },
+          {
+            "texto": "Festejar",
+            "puntos": 20,
+            "sinonimos": [
+              "celebrar",
+              "hacer fiesta"
+            ]
+          }
+        ],
+        "respuestas_acertadas": [
+          "festejar"
+        ],
+        "strikes": 1,
+        "finalizada": false,
+        "turno": "Jugador 1"
+      },
+      {
+        "numero": 8,
         "pregunta": "¿Qué haces en tu cumpleaños?",
         "respuestas_validas": [
           {

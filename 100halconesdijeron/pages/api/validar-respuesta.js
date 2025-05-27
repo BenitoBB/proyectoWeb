@@ -3,7 +3,7 @@
 import path from 'path';
 import fs from 'fs';
 import { validarRespuesta } from '@/utils/validadorRespuestas';
-import { mqttSendMessage } from '@/utils/mqttClient';
+import { mqttSendMessage } from '@/utils/serverMqtt';
 
 const GAMES_FILE = path.join(process.cwd(), 'data', 'games.json');
 
