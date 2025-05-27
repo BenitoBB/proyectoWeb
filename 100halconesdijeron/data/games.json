@@ -3,6 +3,10 @@
     "id": "juego-001",
     "fecha_inicio": "2025-05-27T17:00:00",
     "finalizado": false,
+    "puntaje": {
+      "jugadorA": 0,
+      "jugadorB": 0
+    },
     "rondas": [
       {
         "numero": 1,

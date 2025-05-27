@@ -1,10 +1,15 @@
 // utils/constants.js
+// Aqui se alojan las constantes y tópicos utilizados en la aplicación
 
 export const TOPICS = {
-  GAME_SELECTION: 'halcones/game-selection',         // El admin selecciona el juego
-  GAME_STATE: 'halcones/game-state',                 // Cambios de estado del juego (iniciado, terminado)
-  GAME_SCORE: 'halcones/game-score',                 // Puntos actualizados
-  GAME_WINNER: 'halcones/game-winner',               // Mensaje final de ganador
+  RESPUESTA_JUGADOR: 'halcones/juego/respuesta',
+  RESULTADO_VALIDACION: 'halcones/juego/resultado',
+  ESTADO_TABLERO: 'halcones/juego/tablero', 
+  PUNTAJE: 'halcones/juego/puntaje', 
+  FINALIZADO: 'halcones/juego/finalizado',
+  NUEVO_JUEGO: 'halcones/juego/nuevo',
+
+  NUEVA_RONDA: 'halcones/juego/nueva-ronda',
 
   PLAYER_RESPONSE: 'halcones/player-response',       // Mensajes de respuesta de los jugadores
   PLAYER_REGISTER: 'halcones/player-register',       // Cuando un jugador se registra

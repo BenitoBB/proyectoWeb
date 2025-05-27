@@ -3,49 +3,62 @@
 import { useEffect, useRef } from 'react';
 import Paho from 'paho-mqtt';
 
+let globalClient = null;
+const subscribers = {};
+
 export function useMQTT(topic, onMessageCallback) {
-  const clientRef = useRef(null);
+  const topicRef = useRef(topic);
 
   useEffect(() => {
-    const client = new Paho.Client('broker.hivemq.com', 8000, `clientId-${Math.random()}`);
-    clientRef.current = client;
+    if (!globalClient) {
+      const clientId = 'client-' + Math.random().toString(16).slice(2);
+      globalClient = new Paho.Client('localhost', 9001, '/', clientId);
 
-    client.onConnectionLost = (responseObject) => {
-      console.error('MQTT: Conexión perdida', responseObject.errorMessage);
-    };
+      globalClient.onConnectionLost = () => console.warn('MQTT: conexión perdida');
 
-    client.onMessageArrived = (message) => {
-      const payload = message.payloadString;
-      onMessageCallback(payload, message);
-    };
+      globalClient.onMessageArrived = (message) => {
+        const { destinationName: topic, payloadString } = message;
+        if (subscribers[topic]) {
+          subscribers[topic].forEach((cb) => cb(payloadString, topic));
+        }
+      };
 
-    client.connect({
-      onSuccess: () => {
-        console.log('MQTT: Conectado');
-        client.subscribe(topic);
-      },
-      onFailure: (err) => {
-        console.error('MQTT: Error de conexión', err);
+      globalClient.connect({
+        onSuccess: () => {
+          console.log('MQTT: conectado');
+          Object.keys(subscribers).forEach((t) => globalClient.subscribe(t));
+        },
+        onFailure: (err) => console.error('MQTT error al conectar', err)
+      });
+    }
+
+    // Registrar el nuevo suscriptor
+    if (!subscribers[topicRef.current]) {
+      subscribers[topicRef.current] = [];
+      if (globalClient && globalClient.isConnected()) {
+        globalClient.subscribe(topicRef.current);
       }
-    });
+    }
+
+    subscribers[topicRef.current].push(onMessageCallback);
 
     return () => {
-      if (client && client.isConnected()) {
-        client.disconnect();
-        console.log('MQTT: Desconectado');
-      }
+      subscribers[topicRef.current] = subscribers[topicRef.current].filter(cb => cb !== onMessageCallback);
     };
-  }, [topic]);
+  }, [onMessageCallback]);
 
-  const sendMessage = (payload, destinationTopic = topic) => {
-    if (clientRef.current?.isConnected()) {
+  const sendMessage = (topic, payload) => {
+    if (globalClient && globalClient.isConnected()) {
       const message = new Paho.Message(payload);
-      message.destinationName = destinationTopic;
-      clientRef.current.send(message);
+      message.destinationName = topic;
+      globalClient.send(message);
     } else {
-      console.warn('MQTT: Cliente no conectado aún');
+      console.warn('MQTT: no conectado aún');
     }
   };
 
   return { sendMessage };
+}
+export function useMQTTClient() {
+  return globalClient;
 }

@@ -1,3 +1,5 @@
+//components/EstadisticasPanel.jsx
+
 import { useEffect, useState } from 'react';
 
 export default function EstadisticasPanel() {
