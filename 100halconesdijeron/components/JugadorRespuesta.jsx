@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useMQTT } from '@/utils/mqttClient';
 import { TOPICS } from '@/utils/constants';
 
-export default function JugadorRespuesta({ nombre }) {
+export default function JugadorRespuesta({ nombre, rol, turno }) {
   const [respuesta, setRespuesta] = useState('');
   const [enviada, setEnviada] = useState(false);
   const { sendMessage } = useMQTT(TOPICS.RESULTADO_VALIDACION); // Escuchamos resultados del admin
@@ -31,7 +31,7 @@ export default function JugadorRespuesta({ nombre }) {
         value={respuesta}
         onChange={(e) => setRespuesta(e.target.value)}
         placeholder="Tu respuesta"
-        disabled={enviada}
+        disabled={enviada || turno !== rol}
         style={{ padding: '0.5rem', marginRight: '1rem' }}
       />
       <button onClick={handleEnviar} disabled={enviada}>

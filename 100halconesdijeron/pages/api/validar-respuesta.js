@@ -3,7 +3,8 @@
 import path from 'path';
 import fs from 'fs';
 import { validarRespuesta } from '@/utils/validadorRespuestas';
-import { mqttSendMessage } from '@/utils/serverMqtt';
+import { TOPICS } from '@/utils/constants'; // Asegúrate de importar los tópicos
+import { initMQTTClient, mqttSendMessage } from '@/utils/mqttClient'; // Asegúrate de importar esto
 
 const GAMES_FILE = path.join(process.cwd(), 'data', 'games.json');
 
@@ -46,9 +47,20 @@ export default function handler(req, res) {
   // Guardar cambios
   fs.writeFileSync(GAMES_FILE, JSON.stringify(juegos, null, 2), 'utf8');
 
+  // Inicializa el cliente MQTT backend si no está conectado
+  initMQTTClient();
+
   // Publicar puntaje actualizado
-  const puntajeActualizado = juegoActivo.puntaje;
-  mqttSendMessage('halcones/juego/puntaje', JSON.stringify(puntajeActualizado));
+  mqttSendMessage(TOPICS.PUNTAJE, JSON.stringify(juegoActivo.puntaje));
+
+  // Publicar estado del tablero actualizado
+  mqttSendMessage(TOPICS.ESTADO_TABLERO, JSON.stringify({
+    pregunta: rondaActual.pregunta,
+    respuestas_validas: rondaActual.respuestas_validas,
+    respuestas_acertadas: rondaActual.respuestas_acertadas,
+    strikes: rondaActual.strikes,
+    turno: rondaActual.turno
+  }));
 
   return res.status(200).json({
     jugador,

@@ -2,12 +2,11 @@
 // Aqui se alojan las constantes y tópicos utilizados en la aplicación
 
 export const TOPICS = {
+  ESTADO_TABLERO: 'halcones/juego/tablero',
   RESPUESTA_JUGADOR: 'halcones/juego/respuesta',
   RESULTADO_VALIDACION: 'halcones/juego/resultado',
-  ESTADO_TABLERO: 'halcones/juego/tablero', 
-  PUNTAJE: 'halcones/juego/puntaje', 
-  FINALIZADO: 'halcones/juego/finalizado',
   NUEVO_JUEGO: 'halcones/juego/nuevo',
+  FINALIZADO: 'halcones/juego/finalizado',
 
   NUEVA_RONDA: 'halcones/juego/nueva-ronda',
 
@@ -18,6 +17,9 @@ export const TOPICS = {
   GAME1: 'halcones/game1', // 100 mexicanos dijeron
   GAME2: 'halcones/game2', // Pregunta y responde
   GAME3: 'halcones/game3', // 40 segundos, 5 preguntas
+  PUNTAJE: 'halcones/juego/puntaje',
+
+  TURNO_RAPIDO: 'halcones/juego/turno_rapido',
 };
 
 export const GAMES = {

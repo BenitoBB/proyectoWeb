@@ -4,7 +4,7 @@
     "fecha_inicio": "2025-05-27T17:00:00",
     "finalizado": false,
     "puntaje": {
-      "jugadorA": 20,
+      "jugadorA": 60,
       "jugadorB": 0
     },
     "rondas": [
@@ -77,7 +77,7 @@
         "respuestas_acertadas": [],
         "strikes": 0,
         "finalizada": false,
-        "turno": "Jugador 1"
+        "turno": "Jugador A"
       },
       {
         "numero": 3,
@@ -112,7 +112,7 @@
         "respuestas_acertadas": [],
         "strikes": 1,
         "finalizada": false,
-        "turno": "Jugador 1"
+        "turno": "Jugador A"
       },
       {
         "numero": 4,
@@ -258,6 +258,115 @@
       },
       {
         "numero": 8,
+        "pregunta": "¿Qué haces en tu cumpleaños?",
+        "respuestas_validas": [
+          {
+            "texto": "Comer pastel",
+            "puntos": 40,
+            "sinonimos": [
+              "pastel",
+              "tarta",
+              "pastelito"
+            ]
+          },
+          {
+            "texto": "Recibir regalos",
+            "puntos": 30,
+            "sinonimos": [
+              "regalos",
+              "sorpresas"
+            ]
+          },
+          {
+            "texto": "Festejar",
+            "puntos": 20,
+            "sinonimos": [
+              "celebrar",
+              "hacer fiesta"
+            ]
+          }
+        ],
+        "respuestas_acertadas": [],
+        "strikes": 0,
+        "finalizada": false,
+        "turno": "Jugador 1"
+      },
+      {
+        "numero": 9,
+        "pregunta": "¿Qué haces en tu cumpleaños?",
+        "respuestas_validas": [
+          {
+            "texto": "Comer pastel",
+            "puntos": 40,
+            "sinonimos": [
+              "pastel",
+              "tarta",
+              "pastelito"
+            ]
+          },
+          {
+            "texto": "Recibir regalos",
+            "puntos": 30,
+            "sinonimos": [
+              "regalos",
+              "sorpresas"
+            ]
+          },
+          {
+            "texto": "Festejar",
+            "puntos": 20,
+            "sinonimos": [
+              "celebrar",
+              "hacer fiesta"
+            ]
+          }
+        ],
+        "respuestas_acertadas": [
+          "festejar"
+        ],
+        "strikes": 0,
+        "finalizada": false,
+        "turno": "Jugador 1"
+      },
+      {
+        "numero": 10,
+        "pregunta": "¿Qué haces en tu cumpleaños?",
+        "respuestas_validas": [
+          {
+            "texto": "Comer pastel",
+            "puntos": 40,
+            "sinonimos": [
+              "pastel",
+              "tarta",
+              "pastelito"
+            ]
+          },
+          {
+            "texto": "Recibir regalos",
+            "puntos": 30,
+            "sinonimos": [
+              "regalos",
+              "sorpresas"
+            ]
+          },
+          {
+            "texto": "Festejar",
+            "puntos": 20,
+            "sinonimos": [
+              "celebrar",
+              "hacer fiesta"
+            ]
+          }
+        ],
+        "respuestas_acertadas": [
+          "festejar"
+        ],
+        "strikes": 0,
+        "finalizada": false,
+        "turno": "Jugador 1"
+      },
+      {
+        "numero": 11,
         "pregunta": "¿Qué haces en tu cumpleaños?",
         "respuestas_validas": [
           {

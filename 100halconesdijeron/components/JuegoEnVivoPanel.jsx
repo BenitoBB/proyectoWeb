@@ -34,6 +34,8 @@ export default function JuegoEnVivoPanel() {
             const ronda = juegoActivo.rondas[juegoActivo.rondas.length - 1];
 
             const tablero = {
+              pregunta: ronda.pregunta,
+              respuestas_validas: ronda.respuestas_validas,
               respuestas_acertadas: ronda.respuestas_acertadas,
               strikes: ronda.strikes,
               turno: ronda.turno
@@ -94,6 +96,14 @@ export default function JuegoEnVivoPanel() {
           rondas: [...prev.rondas, data.nuevaRonda]
         }));
         setRonda(data.nuevaRonda);
+
+        sendMessage(TOPICS.ESTADO_TABLERO, JSON.stringify({
+          pregunta,
+          respuestas_validas,
+          respuestas_acertadas: [],
+          strikes: 0,
+          turno: 'Jugador 1'
+        }));
       });
   };
 

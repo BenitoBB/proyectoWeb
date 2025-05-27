@@ -11,6 +11,7 @@ import { useMQTT } from '@/utils/mqttClient';
 import { TOPICS } from '@/utils/constants';
 import PuntajePanel from '@/components/PuntajePanel';
 import JuegoFinalizado from '@/components/JuegoFinalizado';
+import MesaRapidez from '@/components/MesaRapidez';
 
 export default function JugadorPage() {
   const searchParams = useSearchParams();
@@ -25,6 +26,7 @@ export default function JugadorPage() {
   const [listo, setListo] = useState(false);
   const [juegoFinalizado, setJuegoFinalizado] = useState(false);
   const [puntajeFinal, setPuntajeFinal] = useState(null);
+  const [juego, setJuego] = useState({ fase: 'espera' }); // Estado del juego, por defecto en 'espera'
 
   useMQTT(TOPICS.RESULTADO_VALIDACION, (payload) => {
     const data = JSON.parse(payload);
@@ -43,6 +45,11 @@ export default function JugadorPage() {
     location.reload();
   });
 
+  // Si el juego está en la fase de 'pulsador', muestra el componente MesaRapidez
+  if (juego.fase === 'pulsador') {
+    return <MesaRapidez jugador={rol} />;
+  }
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Bienvenido, {name}</h1>
@@ -52,9 +59,9 @@ export default function JugadorPage() {
         <JuegoFinalizado puntaje={puntajeFinal} />
       ) : (
         <>
-          <TableroJugador />
-          <JugadorRespuesta nombre={name} />
           <PuntajePanel />
+          <TableroJugador />
+          <JugadorRespuesta nombre={name} rol={rol} />
         </>
       )}
     </div>
