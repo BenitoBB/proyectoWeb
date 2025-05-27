@@ -1,0 +1,34 @@
+[
+  {
+    "id": "juego-001",
+    "fecha_inicio": "2025-05-27T17:00:00",
+    "finalizado": false,
+    "rondas": [
+      {
+        "numero": 1,
+        "pregunta": "¿Qué harías si ves un fantasma?",
+        "respuestas_validas": [
+          {
+            "texto": "Huir",
+            "puntos": 40,
+            "sinonimos": ["escapar", "correr", "salir corriendo"]
+          },
+          {
+            "texto": "Gritar",
+            "puntos": 30,
+            "sinonimos": ["chillar", "alzar la voz", "pegar un grito"]
+          },
+          {
+            "texto": "Desmayarse",
+            "puntos": 20,
+            "sinonimos": ["caerse", "perder el conocimiento"]
+          }
+        ],
+        "respuestas_acertadas": [], 
+        "strikes": 0,
+        "finalizada": false,
+        "turno": "Jugador 1"
+      }
+    ]
+  }
+]
