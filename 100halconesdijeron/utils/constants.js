@@ -20,6 +20,8 @@ export const TOPICS = {
   PUNTAJE: 'halcones/juego/puntaje',
 
   TURNO_RAPIDO: 'halcones/juego/turno_rapido',
+
+  RAPIDEZ_BOTON: 'halcones/juego/rapidez_boton',
 };
 
 export const GAMES = {

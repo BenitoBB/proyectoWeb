@@ -12,6 +12,7 @@
     "@tailwindcss/postcss": "^4.1.7",
     "classnames": "^2.5.1",
     "mqtt": "^5.13.0",
+    "mysql2": "^3.14.1",
     "next": "15.3.2",
     "paho-mqtt": "^1.1.0",
     "react": "19.1.0",

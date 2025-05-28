@@ -399,6 +399,41 @@
         "strikes": 0,
         "finalizada": false,
         "turno": "Jugador 1"
+      },
+      {
+        "numero": 12,
+        "pregunta": "¿Qué haces en tu cumpleaños?",
+        "respuestas_validas": [
+          {
+            "texto": "Comer pastel",
+            "puntos": 40,
+            "sinonimos": [
+              "pastel",
+              "tarta",
+              "pastelito"
+            ]
+          },
+          {
+            "texto": "Recibir regalos",
+            "puntos": 30,
+            "sinonimos": [
+              "regalos",
+              "sorpresas"
+            ]
+          },
+          {
+            "texto": "Festejar",
+            "puntos": 20,
+            "sinonimos": [
+              "celebrar",
+              "hacer fiesta"
+            ]
+          }
+        ],
+        "respuestas_acertadas": [],
+        "strikes": 0,
+        "finalizada": false,
+        "turno": "Jugador 1"
       }
     ]
   }

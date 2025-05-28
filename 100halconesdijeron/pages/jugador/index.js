@@ -27,6 +27,14 @@ export default function JugadorPage() {
   const [juegoFinalizado, setJuegoFinalizado] = useState(false);
   const [puntajeFinal, setPuntajeFinal] = useState(null);
   const [juego, setJuego] = useState({ fase: 'espera' }); // Estado del juego, por defecto en 'espera'
+  const [turnoGanado, setTurnoGanado] = useState(null);
+  const [tablero, setTablero] = useState({
+    pregunta: '',
+    turno: '',
+    respuestas_validas: [],
+    respuestas_acertadas: [],
+    strikes: 0
+  });
 
   useMQTT(TOPICS.RESULTADO_VALIDACION, (payload) => {
     const data = JSON.parse(payload);
@@ -44,12 +52,37 @@ export default function JugadorPage() {
   useMQTT(TOPICS.NUEVO_JUEGO, () => {
     location.reload();
   });
+ 
+  // Escuchar la pregunta seleccionada por el admin
+  useMQTT('halcones/juego/seleccionada', (payload) => {
+    const data = JSON.parse(payload);
+    setTablero(data);
+    setJuego({ fase: 'pulsador' }); // Cambia la fase para mostrar MesaRapidez
+  });
 
   // Si el juego está en la fase de 'pulsador', muestra el componente MesaRapidez
   if (juego.fase === 'pulsador') {
     return <MesaRapidez jugador={rol} />;
   }
 
+  // lógica para obtener la pregunta actual
+  const preguntaActual = tablero.pregunta || '...';
+
+  if (listo && !turnoGanado) {
+    return (
+      <div className="p-4">
+        <TableroJugador tablero={tablero} setTablero={setTablero} />
+        <MesaRapidez
+          pregunta={preguntaActual}
+          nombre={name}
+          rol={rol}
+          setTurnoGanado={setTurnoGanado}
+        />
+      </div>
+    );
+  }
+
+  // luego el juego normal:
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Bienvenido, {name}</h1>
