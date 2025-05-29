@@ -2,7 +2,8 @@ import React from "react";
 import TituloEstadisticas from "../../componentes/tituloEstadisticas";
 import TituloJuego from "../../componentes/tituloJuego";
 import Rectangulo from "../../componentes/rectangulo";
-
+import Rectangulo2 from "@/componentes/rectangulo2";
+import BotonVolver from "@/componentes/botonVolver";
 export default function Stats() {
   return (
     <div
@@ -49,14 +50,24 @@ export default function Stats() {
       {/* Rectángulos alineados horizontalmente */}
       <div style={{ display: "flex", justifyContent: "center", gap: "2rem" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Rectangulo>Contenido 1</Rectangulo>
+          <Rectangulo2>Contenido 1</Rectangulo2>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Rectangulo>Contenido 2</Rectangulo>
+          <Rectangulo2>Contenido 2</Rectangulo2>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Rectangulo>Contenido 3</Rectangulo>
+          <Rectangulo2>Contenido 3</Rectangulo2>
         </div>
+      </div>
+
+      {/* Optional: Buttons to test strike count */}
+      <div style={{ 
+        marginTop: '30px', 
+        display: 'flex', 
+        gap: '15px', 
+        paddingBottom: '20px'
+      }}>
+        <BotonVolver>Volver</BotonVolver>
       </div>
     </div>
   );

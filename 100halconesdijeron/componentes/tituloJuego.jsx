@@ -1,8 +1,13 @@
 'use client';
-
+import { Open_Sans } from 'next/font/google'; // Import Open Sans from next/font/google
+// Configure the Open Sans font at the TOP LEVEL of the module (file)
+const openSans = Open_Sans({
+  subsets: ['latin'], 
+  display: 'swap',   
+});
 export default function TituloJuego() {
   return (
-    <div
+    <div className={openSans.className}
       style={{
         background: "#cfdede",
         border: "3px solid #000",
