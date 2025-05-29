@@ -33,7 +33,7 @@ export default function HomePage() {
         </button>
         <button
           style={{ ...styles.button, backgroundColor: '#6c757d' }}
-          onClick={() => router.push('/admin/estadisticas')}
+          onClick={() => router.push('/admin/stats')}
         >
           Ver estadísticas
         </button>
