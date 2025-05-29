@@ -14,7 +14,7 @@ const openSans = Open_Sans({
   display: 'swap',   
 });
 
-export default function index3() { // Renamed the function to Juego for clarity
+export default function index() { // Renamed the function to Juego for clarity
 
   return (
     <div

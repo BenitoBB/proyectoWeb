@@ -16,7 +16,7 @@ const openSans = Open_Sans({
 });
 
 
-export default function Stats() {
+export default function index() {
   const handleMesaButtonClick = () => {
       alert("¡Botón de la mesa clickeado!");
   };
