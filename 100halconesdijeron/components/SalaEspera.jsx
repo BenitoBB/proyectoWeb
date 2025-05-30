@@ -2,19 +2,28 @@
 
 'use client';
 
+// Importaciones necesarias
 import { useEffect, useState } from 'react';
 import { useMQTT, useMQTTClient } from '@/utils/mqttClient';
 
 export default function SalaEspera({ rol, setListoGlobal }) {
+
+  // Estado para manejar la conexión de los jugadores
+  // Guarda el estado de conexión de cada rol
+  // admin, jugadorA y jugadorB
   const [estado, setEstado] = useState({
     admin: false,
     jugadorA: false,
     jugadorB: false
   });
 
+  // Estado para indicar si todos los jugadores están conectados
+  // y listos para comenzar el juego
   const [listo, setListo] = useState(false);
   
-  const { sendMessage } = useMQTT('halcones/sala/conectados', (payload) => {
+  // Suscribirse al tópico MQTT para recibir actualizaciones
+  //  sendMessage es una función que envía mensajes al tópico especificado
+  const { sendMessage } = useMQTT('halcones/sala/conectados', (payload) => { // Tópico para recibir mensajes de conexión
     console.log('📨 Mensaje recibido en SalaEspera:', payload);
     const data = JSON.parse(payload);
 
@@ -28,8 +37,8 @@ export default function SalaEspera({ rol, setListoGlobal }) {
     });
   });
 
-  const client = useMQTTClient();
-
+  const client = useMQTTClient(); // Obtener el cliente MQTT actual
+  // Envía mensaje al conectarse a la sala de espera
   useEffect(() => {
     console.log('🔁 Enviando estado conectado:', { rol, conectado: true });
     sendMessage('halcones/sala/conectados', JSON.stringify({ rol, conectado: true }));
@@ -41,11 +50,12 @@ export default function SalaEspera({ rol, setListoGlobal }) {
       if (typeof window !== 'undefined' && window.globalClient?.isConnected()) {
         sendMessage('halcones/sala/conectados', JSON.stringify({ rol, conectado: true }));
       }
-    }, 3000);
+    }, 3000); // Cada 3 segundos
 
     return () => clearInterval(intervalo);
   }, [rol, sendMessage]);
 
+  // Verificar la conexión MQTT cada 500 ms y enviar mensaje si está conectado
   useEffect(() => {
     const interval = setInterval(() => {
       if (client && client.isConnected && client.isConnected()) {
@@ -55,19 +65,20 @@ export default function SalaEspera({ rol, setListoGlobal }) {
       } else {
         console.log("⏳ Esperando conexión MQTT...");
       }
-    }, 500);
+    }, 500); // Cada 500 ms
 
     return () => clearInterval(interval);
   }, [client, rol, sendMessage]);
   
-
+  // Verificar si todos los jugadores están conectados
   useEffect(() => {
     if (estado.admin && estado.jugadorA && estado.jugadorB) {
       setListo(true);
-      if (setListoGlobal) setListoGlobal(true);
+      if (setListoGlobal) setListoGlobal(true); // Actualizar el estado global si se proporciona
     }
   }, [estado]);
 
+  // Reconectar y reenviar el estado si el cliente MQTT se reconecta
   useEffect(() => {
     if (client && client.isConnected && client.isConnected()) {
       console.log("🔄 Reconectado MQTT, reenviando estado...");
