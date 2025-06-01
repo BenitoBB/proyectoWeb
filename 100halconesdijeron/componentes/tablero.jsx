@@ -5,17 +5,17 @@ import React from 'react';
 
 // Define itemStyle outside so TableroItem can use it
 const itemStyle = {
-  backgroundColor: '#00BFFF', // Light blue color for the items
-  border: '3px solid #483D8B', // Darker blue border
+  backgroundColor: '#00BFFF', // Azul claro para el fondo del item
+  border: '3px solid #483D8B', // Azul oscuro para el borde
   borderRadius: '10px',
   padding: '15px 20px',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'flex-start', // Align text to the start (left)
-  color: '#333', // Default text color
+  justifyContent: 'center', // Alinear el texto a la izquierda
+  color: '#333', // Color del texto
   fontSize: '1.2em',
   fontWeight: 'bold',
-  minWidth: '300px', // Ensure a minimum width for the items
+  minWidth: '300px', 
 };
 
 // Helper component for an individual item (no circle) - now exported
@@ -26,21 +26,19 @@ export const TableroItem = ({ text }) => (
 );
 
 export default function Tablero({ children }) {
-  // Define some basic styling for the components to resemble the image
   const boardStyle = {
-    backgroundColor: '#8A2BE2', // Purple color for the main board
+    backgroundColor: '#8A2BE2', // Color morado de la mesa
     padding: '20px',
     borderRadius: '15px',
     display: 'flex',
-    flexDirection: 'column',
-    gap: '10px', // Space between the blue rectangles
-    width: 'fit-content', // Adjust width based on content
-    margin: 'auto', // Center the board
+    flexDirection: 'column', 
+    gap: '10px', // Espacio entre los items
+    width: 'fit-content', // Ajusta el ancho al contenido
+    margin: 'auto', // Centra el tablero horizontalmente
   };
 
   return (
     <div style={boardStyle}>
-      {/* You can pass specific children to render or use default items */}
       {children ? (
         children
       ) : (

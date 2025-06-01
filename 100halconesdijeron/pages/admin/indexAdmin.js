@@ -1,20 +1,18 @@
-// pages/juego.js
-'use client'; // This component will likely interact with the DOM or client-side features
+'use client'; 
 
 import React from "react";
-import TituloJuego from "@/componentes/tituloJuego"; // Make sure this path is correct
-import Pregunta from "@/componentes/pregunta";     // Make sure this path is correct
-import Tablero, { TableroItem } from "@/componentes/tablero"; // Make sure this path is correct
-import Rectangulo from "@/componentes/rectangulo"; // Make sure this path is correct
-import { Open_Sans } from 'next/font/google'; // Import Open Sans from next/font/google
+import TituloJuego from "@/componentes/tituloJuego"; 
+import Pregunta from "@/componentes/pregunta";     
+import Tablero, { TableroItem } from "@/componentes/tablero"; 
+import Rectangulo from "@/componentes/rectangulo"; 
+import { Open_Sans } from 'next/font/google'; 
 
-// Configure the Open Sans font at the TOP LEVEL of the module (file)
 const openSans = Open_Sans({
   subsets: ['latin'], 
   display: 'swap',   
 });
 
-export default function index() { // Renamed the function to Juego for clarity
+export default function indexAdmin() { 
 
   return (
     <div
@@ -25,11 +23,11 @@ export default function index() { // Renamed the function to Juego for clarity
         backgroundSize: "auto",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center", // Centers content horizontally
+        alignItems: "center", 
         padding: "20px",
       }}
     >
-      {/* Game Title Image */}
+      {/* Titulo del Juego 100HALCONESDIJERON */}
       <img
         src="/titulo.png"
         alt="100 HALCONES DIJERON"
@@ -42,31 +40,31 @@ export default function index() { // Renamed the function to Juego for clarity
         }}
       />
 
-      {/* Question Component */}
+      {/* Componente de Pregunta */}
       <div style={{ marginTop: "20px", width: "100%", textAlign: "center" }} className={openSans.className}>
         <Pregunta texto="Aquí va la pregunta principal del juego" />
       </div>
 
-      {/* Main Game Board Layout: Rectangles (Left) - Tablero - Rectangles (Right) */}
+      {/* Distribucion de componentes: Botones (Izq) - Tablero (Centro) - Botones (Der) */}
       <div
         style={{
           display: "flex",
-          flexDirection: "row", // Arrange items in a row
-          alignItems: "center", // Align items centrally in the row
-          gap: "30px",          // Space between groups of components (adjusted for visual appeal)
-          marginTop: "30px",    // Space below the question
-          justifyContent: 'center', // Center the entire row block
-          width: 'fit-content', // Only take up space needed by content
-          maxWidth: '90%', // Prevent overflow on smaller screens
+          flexDirection: "row", 
+          alignItems: "center", 
+          gap: "30px",          
+          marginTop: "30px",    
+          justifyContent: 'center', 
+          width: 'fit-content', 
+          maxWidth: '90%', 
         }}
       >
-        {/* Left Rectangles Group */}
+        {/* Botones (izq) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <Rectangulo>Siguiente ronda</Rectangulo> 
           <Rectangulo>Finalizar juego</Rectangulo> 
         </div>
 
-        {/* Tablero in the center */}
+        {/* Tablero en el centro */}
         <div className={openSans.className}> 
           <Tablero>
             <TableroItem text="Opción A: Primera respuesta" />
@@ -77,7 +75,7 @@ export default function index() { // Renamed the function to Juego for clarity
           </Tablero>
         </div>
 
-        {/* Right Rectangles Group */}
+        {/* Botones (der) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }} >
           <Rectangulo>Turno de Jugador:</Rectangulo> 
           <Rectangulo>Contenido 1</Rectangulo>
