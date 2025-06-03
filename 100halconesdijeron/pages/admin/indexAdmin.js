@@ -16,10 +16,18 @@ const openSans = Open_Sans({
 
 export default function indexAdmin() { 
   const [turnoActual, setTurnoActual] = useState("Esperando...");
+  const [pregunta, setPregunta] = useState(null);
+  const [respuestas, setRespuestas] = useState([]);
 
   // Suscribirse al tópico de turno rápido
   useMQTT(TOPICS.TURNO_RAPIDO, (payload) => {
     setTurnoActual(payload); // payload debe ser "Jugador A", "Jugador B", etc.
+  });
+  // Suscribirse al tópico de pregunta actual
+  useMQTT(TOPICS.PREGUNTA_ACTUAL, (payload) => {
+    const data = JSON.parse(payload);
+    setPregunta(data.pregunta);
+    setRespuestas(data.respuestas);
   });
 
   return (
@@ -50,7 +58,7 @@ export default function indexAdmin() {
 
       {/* Componente de Pregunta */}
       <div style={{ marginTop: "20px", width: "100%", textAlign: "center" }} className={openSans.className}>
-        <Pregunta texto="Aquí va la pregunta principal del juego" />
+        <Pregunta texto={pregunta ? pregunta.texto : "Esperando pregunta..."} />
       </div>
 
       {/* Distribucion de componentes */}
@@ -68,8 +76,10 @@ export default function indexAdmin() {
       >
         {/* Botones (izq) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <Rectangulo>Siguiente ronda</Rectangulo> 
-          <Rectangulo>Finalizar juego</Rectangulo> 
+          <Rectangulo onClick={() => fetch('/api/iniciarRonda')}>
+            Iniciar ronda
+          </Rectangulo>
+          <Rectangulo>Finalizar juego</Rectangulo>
         </div>
 
         {/* Tablero en el centro */}

@@ -10,6 +10,7 @@ import Rectangulo from "@/componentes/rectangulo";
 import { useSearchParams } from 'next/navigation';
 import { useMQTT } from "@/utils/mqttClient";
 import { TOPICS } from "@/utils/constants";
+import { validarRespuesta } from "@/utils/validadorRespuestas";
 
 const openSans = Open_Sans({
   subsets: ['latin'],
@@ -23,19 +24,18 @@ export default function indexMesa() {
 
   const [pregunta, setPregunta] = useState(null);
   const [respuestas, setRespuestas] = useState([]);
-  const [turno, setTurno] = useState(null); // 'Jugador A' o 'Jugador B'
   const [dueloTerminado, setDueloTerminado] = useState(false);
+  const [turno, setTurno] = useState(null);
   const [respuestaInput, setRespuestaInput] = useState("");
-  const { sendMessage } = useMQTT();
+  const [mensaje, setMensaje] = useState("");
+  const [respuestasAcertadas, setRespuestasAcertadas] = useState([]);
 
-  useEffect(() => {
-    fetch("/api/preguntaActual")
-      .then(res => res.json())
-      .then(data => {
-        setPregunta(data.pregunta);
-        setRespuestas(data.pregunta.respuestas);
-      });
-  }, []);
+  // Suscribirse al tópico de pregunta actual
+  const { sendMessage } = useMQTT(TOPICS.PREGUNTA_ACTUAL, (payload) => {
+    const data = JSON.parse(payload);
+    setPregunta(data.pregunta);
+    setRespuestas(data.respuestas);
+  });
 
   // Lógica para el duelo de rapidez
   const handleDueloClick = () => {
@@ -48,9 +48,27 @@ export default function indexMesa() {
 
   // Lógica para responder (solo el jugador con el turno puede responder)
   const handleResponder = () => {
-    alert(`Respuesta enviada: ${respuestaInput}`);
+    if (!respuestaInput.trim()) return;
+
+    // Adaptar respuestas para el validador
+    const respuestasValidas = respuestas.map(r => ({
+      texto: r.texto_respuesta,
+      sinonimos: r.sinonimos || [],
+      puntos: r.puntaje
+    }));
+
+    const resultado = validarRespuesta(respuestaInput, respuestasValidas, respuestasAcertadas);
+
+    if (resultado.acertada) {
+      setMensaje(`¡Correcto! Ganaste ${resultado.puntos} puntos por: ${resultado.respuesta}`);
+      setRespuestasAcertadas([...respuestasAcertadas, resultado.respuesta]);
+      // Aquí puedes manejar si sigue el turno o avanza el juego
+    } else {
+      setMensaje("Respuesta incorrecta o ya fue respondida.");
+      // Aquí puedes manejar el cambio de turno si aplica
+    }
+
     setRespuestaInput("");
-    // Aquí puedes agregar la lógica de validación y avance de juego
   };
 
   return (
@@ -94,8 +112,6 @@ export default function indexMesa() {
         width: 'fit-content',
         maxWidth: '90%',
       }}>
-        {/* Tablero y strikes aquí si lo necesitas */}
-
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {!dueloTerminado ? (
             <Rectangulo onClick={handleDueloClick}>
@@ -127,6 +143,11 @@ export default function indexMesa() {
               >
                 Responder
               </button>
+              {mensaje && (
+                <div style={{ marginTop: "10px", color: "#00796b", fontWeight: "bold" }}>
+                  {mensaje}
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ color: "#333", fontWeight: "bold" }}>

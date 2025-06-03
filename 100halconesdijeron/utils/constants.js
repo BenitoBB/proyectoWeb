@@ -19,6 +19,7 @@ export const TOPICS = {
   GAME3: 'halcones/game3', // 40 segundos, 5 preguntas
   PUNTAJE: 'halcones/juego/puntaje',
 
+  PREGUNTA_ACTUAL: 'halcones/juego/pregunta_actual',
   TURNO_RAPIDO: 'halcones/juego/turno_rapido',
 
   RAPIDEZ_BOTON: 'halcones/juego/rapidez_boton',
