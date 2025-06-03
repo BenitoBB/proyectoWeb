@@ -5,6 +5,7 @@
 // Importaciones necesarias
 import { useEffect, useState } from 'react';
 import { useMQTT, useMQTTClient } from '@/utils/mqttClient';
+import { useRouter } from 'next/navigation'; // Asegúrate de importar esto
 
 export default function SalaEspera({ rol, setListoGlobal }) {
 
@@ -85,6 +86,18 @@ export default function SalaEspera({ rol, setListoGlobal }) {
       sendMessage('halcones/sala/conectados', JSON.stringify({ rol, conectado: true }));
     }
   }, [client, rol, sendMessage]);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (listo) {
+      if (rol === 'jugadorA' || rol === 'jugadorB') {
+        router.push('/jugador/indexMesa');
+      } else if (rol === 'admin') {
+        router.push('/admin/indexAdmin');
+      }
+    }
+  }, [listo, rol, router]);
 
 
   return (

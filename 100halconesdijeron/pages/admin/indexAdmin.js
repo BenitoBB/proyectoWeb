@@ -1,11 +1,13 @@
 'use client'; 
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import TituloJuego from "@/componentes/tituloJuego"; 
 import Pregunta from "@/componentes/pregunta";     
 import Tablero, { TableroItem } from "@/componentes/tablero"; 
 import Rectangulo from "@/componentes/rectangulo"; 
 import { Open_Sans } from 'next/font/google'; 
+import { useMQTT } from "@/utils/mqttClient";
+import { TOPICS } from "@/utils/constants";
 
 const openSans = Open_Sans({
   subsets: ['latin'], 
@@ -13,6 +15,12 @@ const openSans = Open_Sans({
 });
 
 export default function indexAdmin() { 
+  const [turnoActual, setTurnoActual] = useState("Esperando...");
+
+  // Suscribirse al tópico de turno rápido
+  useMQTT(TOPICS.TURNO_RAPIDO, (payload) => {
+    setTurnoActual(payload); // payload debe ser "Jugador A", "Jugador B", etc.
+  });
 
   return (
     <div
@@ -45,7 +53,7 @@ export default function indexAdmin() {
         <Pregunta texto="Aquí va la pregunta principal del juego" />
       </div>
 
-      {/* Distribucion de componentes: Botones (Izq) - Tablero (Centro) - Botones (Der) */}
+      {/* Distribucion de componentes */}
       <div
         style={{
           display: "flex",
@@ -75,10 +83,10 @@ export default function indexAdmin() {
           </Tablero>
         </div>
 
-        {/* Botones (der) */}
+        {/* Turno/ganador (der) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }} >
           <Rectangulo>Turno de Jugador:</Rectangulo> 
-          <Rectangulo>Contenido 1</Rectangulo>
+          <Rectangulo>{turnoActual}</Rectangulo>
         </div>
       </div>
     </div>
