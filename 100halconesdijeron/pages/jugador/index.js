@@ -4,7 +4,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import SalaEspera from '@/components/SalaEspera';
+import SalaEspera from '@/componentes/SalaEspera';
 
 export default function JugadorPage() {
   const searchParams = useSearchParams();

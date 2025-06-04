@@ -3,7 +3,7 @@
 'use client';
 
 import { useState } from 'react';
-import SalaEspera from '@/components/SalaEspera';
+import SalaEspera from '@/componentes/SalaEspera';
 
 export default function AdminPage() {
   const [listo, setListo] = useState(false);

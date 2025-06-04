@@ -50,13 +50,13 @@ export default function Stats() {
       {/* Rectángulos alineados horizontalmente */}
       <div style={{ display: "flex", justifyContent: "center", gap: "2rem" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Rectangulo2>Contenido 1</Rectangulo2>
+          <Rectangulo2>Pregunta más jugada:</Rectangulo2>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Rectangulo2>Contenido 2</Rectangulo2>
+          <Rectangulo2>Respuesta con más puntaje:</Rectangulo2>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Rectangulo2>Contenido 3</Rectangulo2>
+          <Rectangulo2>Jugador con más partidas ganadas:</Rectangulo2>
         </div>
       </div>
 

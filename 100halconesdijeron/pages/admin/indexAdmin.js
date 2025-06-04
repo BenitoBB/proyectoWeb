@@ -1,7 +1,6 @@
 'use client'; 
 
 import React, { useState, useEffect } from "react";
-import TituloJuego from "@/componentes/tituloJuego"; 
 import Pregunta from "@/componentes/pregunta";     
 import Tablero, { TableroItem } from "@/componentes/tablero"; 
 import Rectangulo from "@/componentes/rectangulo"; 
