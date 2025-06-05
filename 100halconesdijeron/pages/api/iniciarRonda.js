@@ -1,8 +1,12 @@
 import db from "@/lib/db";
 import { mqttSendMessage } from "@/utils/serverMqtt";
 import { TOPICS } from "@/utils/constants";
+import { resetGanadorDuelo } from "./dueloRapido";
+import { resetTableroYTurno } from "./responder";
 
 export default async function handler(req, res) {
+  resetGanadorDuelo();
+  resetTableroYTurno();
   try {
     // Obtener una pregunta aleatoria activa
     const [preguntas] = await db.query(

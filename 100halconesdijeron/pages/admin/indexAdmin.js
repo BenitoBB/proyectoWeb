@@ -17,16 +17,23 @@ export default function indexAdmin() {
   const [turnoActual, setTurnoActual] = useState("Esperando...");
   const [pregunta, setPregunta] = useState(null);
   const [respuestas, setRespuestas] = useState([]);
+  const [respuestasAcertadas, setRespuestasAcertadas] = useState([]);
 
   // Suscribirse al tópico de turno rápido
   useMQTT(TOPICS.TURNO_RAPIDO, (payload) => {
-    setTurnoActual(payload); // payload debe ser "Jugador A", "Jugador B", etc.
+    setTurnoActual(payload); // admin
+    setTurno(payload);       // jugador (si quieres sincronizar)
   });
   // Suscribirse al tópico de pregunta actual
   useMQTT(TOPICS.PREGUNTA_ACTUAL, (payload) => {
-    const data = JSON.parse(payload);
+    const data = JSON.parse(payload); 
     setPregunta(data.pregunta);
     setRespuestas(data.respuestas);
+  });
+  // Suscribirse al tópico de tablero
+  useMQTT(TOPICS.ESTADO_TABLERO, (payload) => {
+    const data = JSON.parse(payload);
+    setRespuestasAcertadas(data.respuestasAcertadas);
   });
 
   return (
@@ -57,7 +64,7 @@ export default function indexAdmin() {
 
       {/* Componente de Pregunta */}
       <div style={{ marginTop: "20px", width: "100%", textAlign: "center" }} className={openSans.className}>
-        <Pregunta texto={pregunta ? pregunta.texto : "Esperando pregunta..."} />
+        <Pregunta texto={pregunta ? pregunta.texto : "Da clic en Iniciar ronda"} />
       </div>
 
       {/* Distribucion de componentes */}
@@ -84,18 +91,19 @@ export default function indexAdmin() {
         {/* Tablero en el centro */}
         <div className={openSans.className}> 
           <Tablero>
-            <TableroItem text="Opción A: Primera respuesta" />
-            <TableroItem text="Opción B: Segunda respuesta" />
-            <TableroItem text="Opción C: Tercera respuesta" />
-            <TableroItem text="Opción D: Cuarta respuesta" />
-            <TableroItem text="Opción E: Quinta respuesta" />
+            {respuestas.slice(0, 5).map((resp, idx) => {
+              const acertada = respuestasAcertadas.includes(resp.texto_respuesta);
+              return (
+                <TableroItem key={idx} text={acertada ? resp.texto_respuesta : `${idx + 1}`} />
+              );
+            })}
           </Tablero>
         </div>
 
         {/* Turno/ganador (der) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }} >
-          <Rectangulo>Turno de Jugador:</Rectangulo> 
           <Rectangulo>{turnoActual}</Rectangulo>
+          <Rectangulo>Respuesta: </Rectangulo> 
         </div>
       </div>
     </div>

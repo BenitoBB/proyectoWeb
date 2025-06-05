@@ -1,0 +1,4 @@
+[MySQL] ←→ [API Next.js] ←→ [Mosquitto Broker] ←→ [Frontend React/Next.js]
+                 ↑                ↑   ↑
+                 |                |   |
+           (consulta)         (publica y suscribe mensajes MQTT)

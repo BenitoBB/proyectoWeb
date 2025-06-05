@@ -7,7 +7,7 @@ import Tablero, { TableroItem } from "@/componentes/tablero";
 import Mesa from "@/componentes/Mesa";
 import { Open_Sans } from 'next/font/google';
 import Rectangulo from "@/componentes/rectangulo";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useMQTT } from "@/utils/mqttClient";
 import { TOPICS } from "@/utils/constants";
 import { validarRespuesta } from "@/utils/validadorRespuestas";
@@ -19,6 +19,7 @@ const openSans = Open_Sans({
 
 export default function indexMesa() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const rol = searchParams.get('rol'); // 'jugadorA' o 'jugadorB'
   const nombreJugador = rol === 'jugadorA' ? 'Jugador A' : 'Jugador B';
 
@@ -30,6 +31,17 @@ export default function indexMesa() {
   const [mensaje, setMensaje] = useState("");
   const [respuestasAcertadas, setRespuestasAcertadas] = useState([]);
 
+  // Escuchar el tablero
+  useMQTT(TOPICS.ESTADO_TABLERO, (payload) => {
+    const data = JSON.parse(payload);
+    setRespuestasAcertadas(data.respuestasAcertadas);
+  });
+
+  // Escuchar el turno
+  useMQTT(TOPICS.TURNO_RAPIDO, (payload) => {
+    setTurno(payload);
+  });
+
   // Suscribirse al tópico de pregunta actual
   const { sendMessage } = useMQTT(TOPICS.PREGUNTA_ACTUAL, (payload) => {
     const data = JSON.parse(payload);
@@ -38,38 +50,41 @@ export default function indexMesa() {
   });
 
   // Lógica para el duelo de rapidez
-  const handleDueloClick = () => {
+  const handleDueloClick = async () => {
     if (!turno && !dueloTerminado) {
-      setTurno(nombreJugador);
       setDueloTerminado(true);
-      sendMessage(TOPICS.TURNO_RAPIDO, nombreJugador); // Notifica al admin
+      // Envía al backend quién presionó
+      const res = await fetch('/api/dueloRapido', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jugador: nombreJugador }),
+      });
+      const data = await res.json();
+      setTurno(data.ganador);
     }
   };
 
-  // Lógica para responder (solo el jugador con el turno puede responder)
-  const handleResponder = () => {
-    if (!respuestaInput.trim()) return;
-
-    // Adaptar respuestas para el validador
-    const respuestasValidas = respuestas.map(r => ({
-      texto: r.texto_respuesta,
-      sinonimos: r.sinonimos || [],
-      puntos: r.puntaje
-    }));
-
-    const resultado = validarRespuesta(respuestaInput, respuestasValidas, respuestasAcertadas);
-
-    if (resultado.acertada) {
-      setMensaje(`¡Correcto! Ganaste ${resultado.puntos} puntos por: ${resultado.respuesta}`);
-      setRespuestasAcertadas([...respuestasAcertadas, resultado.respuesta]);
-      // Aquí puedes manejar si sigue el turno o avanza el juego
-    } else {
-      setMensaje("Respuesta incorrecta o ya fue respondida.");
-      // Aquí puedes manejar el cambio de turno si aplica
-    }
-
+  // Enviar respuesta
+  const handleResponder = async () => {
+    if (!respuestaInput.trim() || turno !== nombreJugador) return;
+    const res = await fetch('/api/responder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jugador: nombreJugador,
+        respuesta: respuestaInput,
+        preguntaId: pregunta.id,
+      }),
+    });
+    const data = await res.json();
+    setMensaje(data.mensaje);
     setRespuestaInput("");
   };
+
+  useEffect(() => {
+    setMensaje("");
+    setRespuestaInput("");
+  }, [turno]);
 
   return (
     <div
@@ -99,7 +114,7 @@ export default function indexMesa() {
       />
 
       <div style={{ marginBottom: "30px", width: "80%" }} className={openSans.className}>
-        <Pregunta texto={pregunta ? pregunta.texto : "Cargando pregunta..."} />
+        <Pregunta texto={pregunta ? pregunta.texto : "Esperando pregunta..."} />
       </div>
 
       <div style={{
@@ -112,8 +127,18 @@ export default function indexMesa() {
         width: 'fit-content',
         maxWidth: '90%',
       }}>
+        <div className={openSans.className}>
+          <Tablero>
+            {respuestas.slice(0, 5).map((resp, idx) => {
+              const acertada = respuestasAcertadas.includes(resp.texto_respuesta);
+              return (
+                <TableroItem key={idx} text={acertada ? resp.texto_respuesta : `${idx + 1}`} />
+              );
+            })}
+          </Tablero>
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {!dueloTerminado ? (
+          {!dueloTerminado && !turno ? (
             <Rectangulo onClick={handleDueloClick}>
               ¡Presiona rápido!
             </Rectangulo>
@@ -127,6 +152,7 @@ export default function indexMesa() {
                 value={respuestaInput}
                 onChange={e => setRespuestaInput(e.target.value)}
                 style={{ padding: "10px", fontSize: "1.1em", borderRadius: "8px", border: "1px solid #aaa" }}
+                disabled={turno !== nombreJugador}
               />
               <button
                 onClick={handleResponder}
@@ -140,6 +166,7 @@ export default function indexMesa() {
                   fontWeight: "bold",
                   cursor: "pointer"
                 }}
+                disabled={turno !== nombreJugador}
               >
                 Responder
               </button>
