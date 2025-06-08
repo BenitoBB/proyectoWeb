@@ -92,7 +92,7 @@ export default function SalaEspera({ rol, setListoGlobal }) {
   useEffect(() => {
     if (listo) {
       if (rol === 'jugadorA' || rol === 'jugadorB') {
-        router.push('/jugador/indexMesa');
+        router.push(`/jugador/indexMesa?rol=${rol}`);
       } else if (rol === 'admin') {
         router.push('/admin/indexAdmin');
       }

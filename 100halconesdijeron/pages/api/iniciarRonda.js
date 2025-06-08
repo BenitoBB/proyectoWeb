@@ -1,12 +1,9 @@
 import db from "@/lib/db";
 import { mqttSendMessage } from "@/utils/serverMqtt";
 import { TOPICS } from "@/utils/constants";
-import { resetGanadorDuelo } from "./dueloRapido";
 import { resetTableroYTurno } from "./responder";
 
 export default async function handler(req, res) {
-  resetGanadorDuelo();
-  resetTableroYTurno();
   try {
     // Obtener una pregunta aleatoria activa
     const [preguntas] = await db.query(
@@ -23,6 +20,16 @@ export default async function handler(req, res) {
       [pregunta.pregunta_id]
     );
 
+    // Crear una nueva ronda en la BD
+    const [result] = await db.query(
+      "INSERT INTO Rondas (partida_id, pregunta_id, numero_ronda) VALUES (?, ?, ?)",
+      [1, pregunta.pregunta_id, 1]
+    );
+    const rondaId = result.insertId;
+
+    // Limpiar el estado de la ronda
+    await resetTableroYTurno(rondaId);
+
     // Publicar por MQTT
     mqttSendMessage(
       TOPICS.PREGUNTA_ACTUAL,
@@ -32,6 +39,7 @@ export default async function handler(req, res) {
           texto: pregunta.texto_pregunta,
         },
         respuestas,
+        rondaId, // <-- asegúrate de incluir esto
       })
     );
 

@@ -11,6 +11,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useMQTT } from "@/utils/mqttClient";
 import { TOPICS } from "@/utils/constants";
 import { validarRespuesta } from "@/utils/validadorRespuestas";
+import Strike from "@/componentes/strike";
 
 const openSans = Open_Sans({
   subsets: ['latin'],
@@ -19,7 +20,6 @@ const openSans = Open_Sans({
 
 export default function indexMesa() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const rol = searchParams.get('rol'); // 'jugadorA' o 'jugadorB'
   const nombreJugador = rol === 'jugadorA' ? 'Jugador A' : 'Jugador B';
 
@@ -30,11 +30,20 @@ export default function indexMesa() {
   const [respuestaInput, setRespuestaInput] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [respuestasAcertadas, setRespuestasAcertadas] = useState([]);
+  const [strikesA, setStrikesA] = useState(0);
+  const [strikesB, setStrikesB] = useState(0);
+  const [puedeRobar, setPuedeRobar] = useState(false);
+  const [robando, setRobando] = useState(null);
+  const [rondaId, setRondaId] = useState(null);
 
   // Escuchar el tablero
   useMQTT(TOPICS.ESTADO_TABLERO, (payload) => {
     const data = JSON.parse(payload);
     setRespuestasAcertadas(data.respuestasAcertadas);
+    setStrikesA(data.strikesA || 0);
+    setStrikesB(data.strikesB || 0);
+    setPuedeRobar(data.puedeRobar || false);
+    setRobando(data.robando || null);
   });
 
   // Escuchar el turno
@@ -47,17 +56,16 @@ export default function indexMesa() {
     const data = JSON.parse(payload);
     setPregunta(data.pregunta);
     setRespuestas(data.respuestas);
+    setRondaId(data.rondaId); // <-- esto debe ejecutarse
   });
 
   // Lógica para el duelo de rapidez
   const handleDueloClick = async () => {
-    if (!turno && !dueloTerminado) {
-      setDueloTerminado(true);
-      // Envía al backend quién presionó
+    if (!turno && rondaId) {
       const res = await fetch('/api/dueloRapido', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jugador: nombreJugador }),
+        body: JSON.stringify({ jugador: nombreJugador, rondaId }),
       });
       const data = await res.json();
       setTurno(data.ganador);
@@ -85,6 +93,14 @@ export default function indexMesa() {
     setMensaje("");
     setRespuestaInput("");
   }, [turno]);
+
+  useEffect(() => {
+    if (rol) sessionStorage.setItem("rol", rol);
+  }, [rol]);
+
+  const savedRol = typeof window !== "undefined" ? sessionStorage.getItem("rol") : null;
+
+  console.log("nombreJugador:", nombreJugador, "rol:", rol, "turno:", turno, "rondaId:", rondaId);
 
   return (
     <div
@@ -138,7 +154,7 @@ export default function indexMesa() {
           </Tablero>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {!dueloTerminado && !turno ? (
+          {!turno && rondaId ? (
             <Rectangulo onClick={handleDueloClick}>
               ¡Presiona rápido!
             </Rectangulo>
@@ -183,6 +199,15 @@ export default function indexMesa() {
           )}
         </div>
       </div>
+      <div style={{ display: "flex", gap: "10px" }}>
+        <Strike>Strikes A: {strikesA}</Strike>
+        <Strike>Strikes B: {strikesB}</Strike>
+      </div>
+      {puedeRobar && (
+        <div style={{ color: "red", fontWeight: "bold" }}>
+          ¡{robando === nombreJugador ? "Tienes" : "El otro jugador tiene"} oportunidad de robar!
+        </div>
+      )}
     </div>
   );
 }

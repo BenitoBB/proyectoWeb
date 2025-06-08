@@ -196,3 +196,29 @@ INSERT INTO Sinonimos (respuesta_id, texto_sinonimo) VALUES
 (28, 'Apoyar a mis seres queridos'), (28, 'Dar dinero a mi familia'),
 (29, 'Poner un negocio'), (29, 'Abrir una empresa'),
 (30, 'Adquirir un automóvil'), (30, 'Comprar un carro');
+
+
+SELECT * FROM Preguntas;
+
+ALTER TABLE Rondas
+  ADD COLUMN turno_actual ENUM('A','B') DEFAULT 'A',
+  ADD COLUMN strikes_jugadorA INT DEFAULT 0,
+  ADD COLUMN strikes_jugadorB INT DEFAULT 0,
+  ADD COLUMN puede_robar BOOLEAN DEFAULT FALSE,
+  ADD COLUMN robando ENUM('A','B') DEFAULT NULL,
+  ADD COLUMN puntos_acumulados INT DEFAULT 0;
+  
+  CREATE TABLE Respuestas_Acertadas (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  ronda_id INT NOT NULL,
+  respuesta_id INT NOT NULL,
+  FOREIGN KEY (ronda_id) REFERENCES Rondas(ronda_id) ON DELETE CASCADE,
+  FOREIGN KEY (respuesta_id) REFERENCES Respuestas(respuesta_id) ON DELETE CASCADE
+);
+  
+SELECT turno_actual, strikes_jugadorA, strikes_jugadorB, puede_robar, robando, puntos_acumulados
+FROM Rondas
+WHERE ronda_id = ?;
+
+INSERT IGNORE INTO Partidas (partida_id, jugadorA_id, jugadorB_id) VALUES (1, 2, 3);
+ALTER TABLE Rondas MODIFY turno_actual VARCHAR(20) DEFAULT NULL;
