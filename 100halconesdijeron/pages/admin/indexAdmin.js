@@ -36,6 +36,9 @@ export default function indexAdmin() {
     setRespuestasAcertadas(data.respuestasAcertadas);
   });
 
+  console.log("respuestasAcertadas:", respuestasAcertadas);
+  console.log("respuestas:", respuestas.map(r => r.texto_respuesta));
+
   return (
     <div
       style={{
@@ -92,7 +95,8 @@ export default function indexAdmin() {
         <div className={openSans.className}> 
           <Tablero>
             {respuestas.slice(0, 5).map((resp, idx) => {
-              const acertada = respuestasAcertadas.includes(resp.texto_respuesta);
+              const acertada = respuestasAcertadas
+                .some(r => r.trim().toLowerCase() === resp.texto_respuesta.trim().toLowerCase());
               return (
                 <TableroItem key={idx} text={acertada ? resp.texto_respuesta : `${idx + 1}`} />
               );

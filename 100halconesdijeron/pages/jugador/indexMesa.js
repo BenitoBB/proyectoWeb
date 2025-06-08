@@ -82,6 +82,7 @@ export default function indexMesa() {
         jugador: nombreJugador,
         respuesta: respuestaInput,
         preguntaId: pregunta.id,
+        rondaId: rondaId, // falta rondaId aquí
       }),
     });
     const data = await res.json();
@@ -101,6 +102,8 @@ export default function indexMesa() {
   const savedRol = typeof window !== "undefined" ? sessionStorage.getItem("rol") : null;
 
   console.log("nombreJugador:", nombreJugador, "rol:", rol, "turno:", turno, "rondaId:", rondaId);
+  console.log("respuestasAcertadas:", respuestasAcertadas);
+  console.log("respuestas:", respuestas.map(r => r.texto_respuesta));
 
   return (
     <div
@@ -146,7 +149,8 @@ export default function indexMesa() {
         <div className={openSans.className}>
           <Tablero>
             {respuestas.slice(0, 5).map((resp, idx) => {
-              const acertada = respuestasAcertadas.includes(resp.texto_respuesta);
+              const acertada = respuestasAcertadas
+                .some(r => r.trim().toLowerCase() === resp.texto_respuesta.trim().toLowerCase());
               return (
                 <TableroItem key={idx} text={acertada ? resp.texto_respuesta : `${idx + 1}`} />
               );
