@@ -5,6 +5,8 @@
  * Devuelve el resultado al frontend.
  */
 
+
+
 import db from "@/lib/db";
 import { mqttSendMessage } from "@/utils/serverMqtt";
 import { TOPICS } from "@/utils/constants";
@@ -12,7 +14,17 @@ import { TOPICS } from "@/utils/constants";
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const { jugador, respuesta, preguntaId, rondaId } = req.body;
+  // Si el body viene como string (por curl), parsea manualmente
+  let body = req.body;
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      return res.status(400).json({ error: "Invalid JSON" });
+    }
+  }
+
+  const { jugador, respuesta, preguntaId, rondaId } = body;
 
   // 1. Leer el estado actual de la ronda
   const [[ronda]] = await db.query(
@@ -257,3 +269,4 @@ export async function resetTableroYTurno(rondaId) {
     [rondaId]
   );
 }
+
