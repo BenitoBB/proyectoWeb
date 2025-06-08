@@ -26,6 +26,9 @@ export default async function handler(req, res) {
 
   const { jugador, respuesta, preguntaId, rondaId } = body;
 
+  console.log("BODY:", body);
+  console.log("rondaId recibido:", rondaId);
+
   // 1. Leer el estado actual de la ronda
   const [[ronda]] = await db.query(
     "SELECT * FROM Rondas WHERE ronda_id = ?",
@@ -45,6 +48,11 @@ export default async function handler(req, res) {
     "SELECT * FROM Respuestas WHERE pregunta_id = ? ORDER BY puntaje DESC",
     [preguntaId]
   );
+
+  // Mapear IDs a textos:
+  const respuestasAcertadasTextos = respuestas
+    .filter(r => respuestasAcertadas.includes(r.respuesta_id))
+    .map(r => r.texto_respuesta);
 
   // 4. Buscar si la respuesta es válida y no ha sido acertada antes
   const limpia = respuesta.trim().toLowerCase();
@@ -70,7 +78,7 @@ export default async function handler(req, res) {
       esMasFamosa: false,
       turno: turnoActual,
       mensaje: "No es tu turno.",
-      respuestasAcertadas,
+      respuestasAcertadas: respuestasAcertadasTextos,
     });
   } else if (respuestaCorrecta) {
     // Registrar respuesta acertada en la BD
@@ -234,7 +242,7 @@ export default async function handler(req, res) {
   // Publicar el turno y el tablero por MQTT
   mqttSendMessage(TOPICS.TURNO_RAPIDO, turnoActual);
   mqttSendMessage(TOPICS.ESTADO_TABLERO, JSON.stringify({
-    respuestasAcertadas,
+    respuestasAcertadas: respuestasAcertadasTextos,
     strikesA,
     strikesB,
     puedeRobar,
@@ -246,7 +254,7 @@ export default async function handler(req, res) {
     esMasFamosa,
     turno: turnoActual,
     mensaje,
-    respuestasAcertadas,
+    respuestasAcertadas: respuestasAcertadasTextos,
   });
 }
 

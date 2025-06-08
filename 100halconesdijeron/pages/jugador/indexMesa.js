@@ -88,7 +88,7 @@ export default function indexMesa() {
     setMensaje(data.mensaje);
     setRespuestaInput("");
   };
-
+ 
   useEffect(() => {
     setMensaje("");
     setRespuestaInput("");
