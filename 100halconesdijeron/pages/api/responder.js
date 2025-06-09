@@ -109,18 +109,18 @@ export default async function handler(req, res) {
     }
 
     // Vuelve a consultar las respuestas acertadas
-    const [acertadasRows2] = await db.query(
+    const [acertadasRows] = await db.query(
       "SELECT respuesta_id FROM Respuestas_Acertadas WHERE ronda_id = ?",
       [rondaId]
     );
-    const respuestasAcertadas2 = acertadasRows2.map(r => r.respuesta_id);
-    const respuestasAcertadasTextos2 = respuestas
-      .filter(r => respuestasAcertadas2.includes(r.respuesta_id))
+    const respuestasAcertadasIds = acertadasRows.map(r => r.respuesta_id);
+    const respuestasAcertadasTextos = respuestas
+      .filter(r => respuestasAcertadasIds.includes(r.respuesta_id))
       .map(r => r.texto_respuesta);
 
-    // Publica el tablero actualizado INMEDIATAMENTE
+    // Publica el tablero actualizado por MQTT
     mqttSendMessage(TOPICS.ESTADO_TABLERO, JSON.stringify({
-      respuestasAcertadas: respuestasAcertadasTextos2,
+      respuestasAcertadas: respuestasAcertadasTextos,
       strikesA,
       strikesB,
       puedeRobar,
@@ -128,7 +128,7 @@ export default async function handler(req, res) {
     }));
 
     // --- AGREGA ESTO: PUBLICAR GANADOR SI YA SE ACERTARON TODAS LAS RESPUESTAS ---
-    if (respuestasAcertadas2.length === respuestas.length) {
+    if (respuestasAcertadasIds.length === respuestas.length) {
       mqttSendMessage(TOPICS.GANADOR, jugador);
     }
 
@@ -194,23 +194,8 @@ export default async function handler(req, res) {
     }
   }
 
-  // Publicar el turno y el tablero por MQTT
+  // Publicar el turno por MQTT (esto sí puede ir siempre)
   mqttSendMessage(TOPICS.TURNO_RAPIDO, turnoActual);
-  mqttSendMessage(TOPICS.ESTADO_TABLERO, JSON.stringify({
-    respuestasAcertadas: respuestasAcertadasTextos,
-    strikesA,
-    strikesB,
-    puedeRobar,
-    robando,
-  }));
-
-  // EJEMPLO: Publicar ganador SOLO cuando termina la ronda
-  // if (todasLasRespuestasAcertadas) {
-  //   mqttSendMessage(TOPICS.GANADOR, "Jugador A");
-  // }
-  // if (modoRoboTerminado) {
-  //   mqttSendMessage(TOPICS.GANADOR, "Jugador B");
-  // }
 
   res.status(200).json({
     acertada: !!respuestaCorrecta,
