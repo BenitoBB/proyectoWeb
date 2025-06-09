@@ -94,7 +94,7 @@ export default function SalaEspera({ rol, setListoGlobal }) {
       if (rol === 'jugadorA' || rol === 'jugadorB') {
         router.push(`/jugador/indexMesa?rol=${rol}`);
       } else if (rol === 'admin') {
-        router.push('/admin/indexAdmin');
+        router.push('/admin/indexAdmin?rol=admin');
       }
     }
   }, [listo, rol, router]);

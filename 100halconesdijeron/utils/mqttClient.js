@@ -13,7 +13,7 @@ export function useMQTT(topic, onMessageCallback) {
     // Validar tópico antes de suscribirse
     if (!topicRef.current || typeof topicRef.current !== 'string') {
       console.warn('⚠️ MQTT: tópico inválido', topicRef.current);
-      return;
+      return; 
     }
 
     if (!globalClient) {
@@ -93,6 +93,7 @@ export function mqttSendMessage(topic, payload) {
   if (client && client.isConnected()) {
     const message = new Paho.MQTT.Message(payload);
     message.destinationName = topic;
+    message.retained = true; // <-- ¡Esto es lo importante!
     client.send(message);
   } else {
     console.warn("MQTT backend no conectado aún");

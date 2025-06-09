@@ -7,6 +7,7 @@ import Rectangulo from "@/componentes/rectangulo";
 import { Open_Sans } from 'next/font/google'; 
 import { useMQTT } from "@/utils/mqttClient";
 import { TOPICS } from "@/utils/constants";
+import { useSearchParams } from 'next/navigation';
 
 const openSans = Open_Sans({
   subsets: ['latin'], 
@@ -14,11 +15,21 @@ const openSans = Open_Sans({
 });
 
 export default function indexAdmin() { 
+  const searchParams = useSearchParams();
+  const rol = searchParams.get('rol') || 'admin'; // fallback por si acaso
   const [turnoActual, setTurnoActual] = useState("Esperando...");
   const [pregunta, setPregunta] = useState(null);
   const [respuestas, setRespuestas] = useState([]);
   const [respuestasAcertadas, setRespuestasAcertadas] = useState([]);
+  const [ganador, setGanador] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
+  // Suscribirse al tópico de tablero
+  useMQTT(TOPICS.ESTADO_TABLERO, (payload) => {
+    const data = JSON.parse(payload);
+    setRespuestasAcertadas(data.respuestasAcertadas);
+  });
+  
   // Suscribirse al tópico de turno rápido
   useMQTT(TOPICS.TURNO_RAPIDO, (payload) => {
     setTurnoActual(payload); // admin
@@ -30,10 +41,16 @@ export default function indexAdmin() {
     setPregunta(data.pregunta);
     setRespuestas(data.respuestas);
   });
-  // Suscribirse al tópico de tablero
-  useMQTT(TOPICS.ESTADO_TABLERO, (payload) => {
-    const data = JSON.parse(payload);
-    setRespuestasAcertadas(data.respuestasAcertadas);
+  
+  // Suscribirse al tópico de ganador
+  useMQTT(TOPICS.GANADOR, (payload) => {
+    if (payload && payload !== "" && payload !== "Juego finalizado") {
+      setGanador(payload);
+      setShowModal(true);
+    } else {
+      setGanador("");
+      setShowModal(false);
+    }
   });
 
   console.log("respuestasAcertadas:", respuestasAcertadas);
@@ -85,31 +102,45 @@ export default function indexAdmin() {
       >
         {/* Botones (izq) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <Rectangulo onClick={() => fetch('/api/iniciarRonda')}>
-            Iniciar ronda
-          </Rectangulo>
-          <Rectangulo>Finalizar juego</Rectangulo>
-        </div>
-
-        {/* Tablero en el centro */}
-        <div className={openSans.className}> 
-          <Tablero>
-            {respuestas.slice(0, 5).map((resp, idx) => {
-              const acertada = respuestasAcertadas
-                .some(r => r.trim().toLowerCase() === resp.texto_respuesta.trim().toLowerCase());
-              return (
-                <TableroItem key={idx} text={acertada ? resp.texto_respuesta : `${idx + 1}`} />
-              );
-            })}
-          </Tablero>
-        </div>
+          <Rectangulo onClick={() => {
+  fetch('/api/iniciarRonda');
+  setGanador("");
+  setShowModal(false);
+  setRespuestasAcertadas([]);
+}}>
+  Iniciar ronda
+</Rectangulo>
+          <Rectangulo onClick={async () => {
+  await fetch('/api/finalizarJuego');
+  setGanador("Juego finalizado");
+  setShowModal(false);
+}}>
+  Finalizar juego
+</Rectangulo>
+        </div> 
 
         {/* Turno/ganador (der) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }} >
-          <Rectangulo>{turnoActual}</Rectangulo>
-          <Rectangulo>Respuesta: </Rectangulo> 
+          <Rectangulo>Turno ganador a: {turnoActual}</Rectangulo>
+          <Rectangulo>Ganador: {ganador}</Rectangulo> 
         </div>
       </div>
+
+      {/* Modal de Ganador */}
+      {showModal && ganador && ganador !== "Juego finalizado" && (
+  <div style={{
+    position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+    background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
+  }}>
+    <div style={{
+      background: "#fff", padding: "2rem", borderRadius: "1rem", textAlign: "center", minWidth: "300px"
+    }}>
+      <h2>¡Tenemos un ganador!</h2>
+      <p>{ganador}</p>
+      <button onClick={() => setShowModal(false)} style={{marginTop: "1rem"}}>Cerrar</button>
+    </div>
+  </div>
+)}
     </div>
   );
 }

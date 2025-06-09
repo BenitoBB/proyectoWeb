@@ -23,6 +23,8 @@ export const TOPICS = {
   TURNO_RAPIDO: 'halcones/juego/turno_rapido',
 
   RAPIDEZ_BOTON: 'halcones/juego/rapidez_boton',
+
+  GANADOR: 'halcones/juego/ganador',
 };
 
 export const GAMES = {

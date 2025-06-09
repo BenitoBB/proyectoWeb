@@ -35,6 +35,8 @@ export default function indexMesa() {
   const [puedeRobar, setPuedeRobar] = useState(false);
   const [robando, setRobando] = useState(null);
   const [rondaId, setRondaId] = useState(null);
+  const [ganador, setGanador] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   // Escuchar el tablero
   useMQTT(TOPICS.ESTADO_TABLERO, (payload) => {
@@ -57,6 +59,17 @@ export default function indexMesa() {
     setPregunta(data.pregunta);
     setRespuestas(data.respuestas);
     setRondaId(data.rondaId); // <-- esto debe ejecutarse
+  });
+
+  // Escuchar el ganador
+  useMQTT(TOPICS.GANADOR, (payload) => {
+    if (payload && payload !== "" && payload !== "Juego finalizado") {
+      setGanador(payload);
+      setShowModal(true);
+    } else {
+      setGanador("");
+      setShowModal(false);
+    }
   });
 
   // Lógica para el duelo de rapidez
@@ -210,6 +223,20 @@ export default function indexMesa() {
       {puedeRobar && (
         <div style={{ color: "red", fontWeight: "bold" }}>
           ¡{robando === nombreJugador ? "Tienes" : "El otro jugador tiene"} oportunidad de robar!
+        </div>
+      )}
+      {showModal && ganador && ganador !== "Juego finalizado" && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
+        }}>
+          <div style={{
+            background: "#fff", padding: "2rem", borderRadius: "1rem", textAlign: "center", minWidth: "300px"
+          }}>
+            <h2>¡Tenemos un ganador!</h2>
+            <p>{ganador}</p>
+            <button onClick={() => setShowModal(false)} style={{marginTop: "1rem"}}>Cerrar</button>
+          </div>
         </div>
       )}
     </div>

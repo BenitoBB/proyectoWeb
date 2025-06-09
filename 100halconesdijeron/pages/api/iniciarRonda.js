@@ -5,7 +5,7 @@ import { resetTableroYTurno } from "./responder";
 
 export default async function handler(req, res) {
   try {
-    // Obtener una pregunta aleatoria activa
+    // 1. Obtener una pregunta aleatoria activa
     const [preguntas] = await db.query(
       "SELECT * FROM Preguntas WHERE activa = 1 ORDER BY RAND() LIMIT 1"
     );
@@ -14,23 +14,23 @@ export default async function handler(req, res) {
     }
     const pregunta = preguntas[0];
 
-    // Obtener respuestas principales de la pregunta
+    // 2. Obtener respuestas principales de la pregunta
     const [respuestas] = await db.query(
       "SELECT * FROM Respuestas WHERE pregunta_id = ? ORDER BY puntaje DESC",
       [pregunta.pregunta_id]
     );
 
-    // Crear una nueva ronda en la BD
+    // 3. Crear una nueva ronda en la BD
     const [result] = await db.query(
       "INSERT INTO Rondas (partida_id, pregunta_id, numero_ronda) VALUES (?, ?, ?)",
       [1, pregunta.pregunta_id, 1]
     );
     const rondaId = result.insertId;
 
-    // Limpiar el estado de la ronda
+    // 4. Limpiar el estado de la ronda (strikes, turno, modo robo, respuestas acertadas)
     await resetTableroYTurno(rondaId);
 
-    // Publicar por MQTT
+    // 5. Publicar por MQTT el estado inicial
     mqttSendMessage(
       TOPICS.PREGUNTA_ACTUAL,
       JSON.stringify({
@@ -39,7 +39,22 @@ export default async function handler(req, res) {
           texto: pregunta.texto_pregunta,
         },
         respuestas,
-        rondaId, // <-- asegúrate de incluir esto
+        rondaId,
+      })
+    );
+
+    // Limpiar el ganador en el frontend
+    mqttSendMessage(TOPICS.GANADOR, "");
+
+    // Publicar tablero limpio
+    mqttSendMessage(
+      TOPICS.ESTADO_TABLERO,
+      JSON.stringify({
+        respuestasAcertadas: [],
+        strikesA: 0,
+        strikesB: 0,
+        puedeRobar: false,
+        robando: null,
       })
     );
 
