@@ -62,7 +62,7 @@ export default function HomePage() {
             <Rectangulo onClick={() => router.push('/jugador?name=JugadorA&rol=jugadorA')}>Jugador A</Rectangulo>
             <Rectangulo onClick={() => router.push('/jugador?name=JugadorB&rol=jugadorB')}>Jugador B</Rectangulo>
             <Rectangulo2 onClick={() => router.push('/admin')}>Administrador</Rectangulo2>
-            <Rectangulo2 onClick={() => router.push('/admin/stats')}>Estadísticas</Rectangulo2>
+            <Rectangulo2 onClick={() => router.push('/stats')}>Estadísticas</Rectangulo2>
           </div>
 
       </div>
