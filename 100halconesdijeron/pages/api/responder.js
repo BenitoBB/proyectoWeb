@@ -127,6 +127,11 @@ export default async function handler(req, res) {
       robando,
     }));
 
+    // --- AGREGA ESTO: PUBLICAR GANADOR SI YA SE ACERTARON TODAS LAS RESPUESTAS ---
+    if (respuestasAcertadas2.length === respuestas.length) {
+      mqttSendMessage(TOPICS.GANADOR, jugador);
+    }
+
     // ¿Es la más famosa? (mayor puntaje)
     const maxPuntaje = Math.max(...respuestas.map(r => r.puntaje));
     esMasFamosa = respuestaCorrecta.puntaje === maxPuntaje;

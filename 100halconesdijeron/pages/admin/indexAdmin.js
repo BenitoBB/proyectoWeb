@@ -32,9 +32,9 @@ export default function indexAdmin() {
   
   // Suscribirse al tópico de turno rápido
   useMQTT(TOPICS.TURNO_RAPIDO, (payload) => {
-    setTurnoActual(payload); // admin
-    setTurno(payload);       // jugador (si quieres sincronizar)
+    setTurnoActual(payload); // Solo esto
   });
+
   // Suscribirse al tópico de pregunta actual
   useMQTT(TOPICS.PREGUNTA_ACTUAL, (payload) => {
     const data = JSON.parse(payload); 
@@ -107,6 +107,9 @@ export default function indexAdmin() {
   setGanador("");
   setShowModal(false);
   setRespuestasAcertadas([]);
+  setTurnoActual("Esperando...");
+  setPregunta(null);      // <-- Limpia la pregunta
+  setRespuestas([]);      // <-- Limpia las respuestas
 }}>
   Iniciar ronda
 </Rectangulo>

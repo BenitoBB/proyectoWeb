@@ -1,7 +1,7 @@
 // pages/index2.js
 'use client'; // Ensure this is present for hooks like useState
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Pregunta from "@/componentes/pregunta";
 import Tablero, { TableroItem } from "@/componentes/tablero";
 import Mesa from "@/componentes/Mesa";
@@ -37,6 +37,20 @@ export default function indexMesa() {
   const [rondaId, setRondaId] = useState(null);
   const [ganador, setGanador] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [juegoFinalizado, setJuegoFinalizado] = useState(false);
+
+  const prevRondaId = useRef();
+
+  // Limpiar turno SOLO cuando cambia la ronda
+  useEffect(() => {
+    if (rondaId && rondaId !== prevRondaId.current) {
+      setTurno(null);
+      setMensaje("");
+      setRespuestaInput("");
+      setJuegoFinalizado(false);
+      prevRondaId.current = rondaId;
+    }
+  }, [rondaId]);
 
   // Escuchar el tablero
   useMQTT(TOPICS.ESTADO_TABLERO, (payload) => {
@@ -46,10 +60,23 @@ export default function indexMesa() {
     setStrikesB(data.strikesB || 0);
     setPuedeRobar(data.puedeRobar || false);
     setRobando(data.robando || null);
+
+    // Si el tablero está limpio, reinicia el estado local
+    if (
+      Array.isArray(data.respuestasAcertadas) &&
+      data.respuestasAcertadas.length === 0 &&
+      (data.strikesA === 0 || !data.strikesA) &&
+      (data.strikesB === 0 || !data.strikesB)
+    ) {
+      setMensaje("");
+      setRespuestaInput("");
+      setJuegoFinalizado(false);
+      // NO pongas setTurno(null) aquí
+    }
   });
 
   // Escuchar el turno
-  useMQTT(TOPICS.TURNO_RAPIDO, (payload) => {
+  useMQTT(TOPICS.TURNO_RAPIDO, (payload) => { 
     setTurno(payload);
   });
 
@@ -63,12 +90,18 @@ export default function indexMesa() {
 
   // Escuchar el ganador
   useMQTT(TOPICS.GANADOR, (payload) => {
-    if (payload && payload !== "" && payload !== "Juego finalizado") {
+    if (payload === "Juego finalizado") {
+      setJuegoFinalizado(true);
+      setGanador("");
+      setShowModal(false);
+    } else if (payload && payload !== "") {
       setGanador(payload);
       setShowModal(true);
+      setJuegoFinalizado(false);
     } else {
       setGanador("");
       setShowModal(false);
+      setJuegoFinalizado(false);
     }
   });
 
@@ -170,57 +203,61 @@ export default function indexMesa() {
             })}
           </Tablero>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {!turno && rondaId ? (
-            <Rectangulo onClick={handleDueloClick}>
-              ¡Presiona rápido!
-            </Rectangulo>
-          ) : turno === nombreJugador ? (
-            <div>
-              <div style={{ marginBottom: "10px", color: "#333", fontWeight: "bold" }}>
-                ¡Tienes el turno! Escribe tu respuesta:
-              </div>
-              <input
-                type="text"
-                value={respuestaInput}
-                onChange={e => setRespuestaInput(e.target.value)}
-                style={{ padding: "10px", fontSize: "1.1em", borderRadius: "8px", border: "1px solid #aaa" }}
-                disabled={turno !== nombreJugador}
-              />
-              <button
-                onClick={handleResponder}
-                style={{
-                  marginLeft: "10px",
-                  padding: "10px 20px",
-                  borderRadius: "8px",
-                  background: "#5145C6",
-                  color: "#fff",
-                  border: "none",
-                  fontWeight: "bold",
-                  cursor: "pointer"
-                }}
-                disabled={turno !== nombreJugador}
-              >
-                Responder
-              </button>
-              {mensaje && (
-                <div style={{ marginTop: "10px", color: "#00796b", fontWeight: "bold" }}>
-                  {mensaje}
+        {!juegoFinalizado && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {!turno && rondaId ? (
+              <Rectangulo onClick={handleDueloClick}>
+                ¡Presiona rápido!
+              </Rectangulo>
+            ) : turno === nombreJugador ? (
+              <div>
+                <div style={{ marginBottom: "10px", color: "#333", fontWeight: "bold" }}>
+                  ¡Tienes el turno! Escribe tu respuesta:
                 </div>
-              )}
-            </div>
-          ) : (
-            <div style={{ color: "#333", fontWeight: "bold" }}>
-              Esperando al otro jugador...
-            </div>
-          )}
+                <input
+                  type="text"
+                  value={respuestaInput}
+                  onChange={e => setRespuestaInput(e.target.value)}
+                  style={{ padding: "10px", fontSize: "1.1em", borderRadius: "8px", border: "1px solid #aaa" }}
+                  disabled={turno !== nombreJugador}
+                />
+                <button
+                  onClick={handleResponder}
+                  style={{
+                    marginLeft: "10px",
+                    padding: "10px 20px",
+                    borderRadius: "8px",
+                    background: "#5145C6",
+                    color: "#fff",
+                    border: "none",
+                    fontWeight: "bold",
+                    cursor: "pointer"
+                  }}
+                  disabled={turno !== nombreJugador}
+                >
+                  Responder
+                </button>
+                {mensaje && (
+                  <div style={{ marginTop: "10px", color: "#00796b", fontWeight: "bold" }}>
+                    {mensaje}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ color: "#333", fontWeight: "bold" }}>
+                Esperando al otro jugador...
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      {!juegoFinalizado && (
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Strike>Strikes A: {strikesA}</Strike>
+          <Strike>Strikes B: {strikesB}</Strike>
         </div>
-      </div>
-      <div style={{ display: "flex", gap: "10px" }}>
-        <Strike>Strikes A: {strikesA}</Strike>
-        <Strike>Strikes B: {strikesB}</Strike>
-      </div>
-      {puedeRobar && (
+      )}
+      {puedeRobar && !juegoFinalizado && (
         <div style={{ color: "red", fontWeight: "bold" }}>
           ¡{robando === nombreJugador ? "Tienes" : "El otro jugador tiene"} oportunidad de robar!
         </div>
