@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  mqtt:
+    image: benny2/mosquitto-websocket # Usar la imagen de Mosquitto con WebSocket
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    container_name: mqtt_server
+
+  web:
+    build:
+      context: ./100halconesdijeron
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    container_name: web_app
+    depends_on:
+      - mqtt
+    environment:
+      - MQTT_HOST=mqtt
+      - MQTT_PORT=1883
