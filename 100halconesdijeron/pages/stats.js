@@ -51,7 +51,7 @@ export default function Stats() {
           <Rectangulo>Pregunta más jugada: {stats ? stats.preguntaMasJugada : "..."}</Rectangulo>
         </div>
       </div>
-
+ 
       <div style={{ display: "flex", justifyContent: "center", margin: "2rem 0" }}>
         <TituloJuego /> 
       </div>
