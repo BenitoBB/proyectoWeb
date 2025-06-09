@@ -1,4 +1,4 @@
-'use client';
++'use client';
 
 import { useRouter } from 'next/navigation';
 import Rectangulo from '@/componentes/rectangulo';
@@ -30,7 +30,6 @@ export default function HomePage() {
         boxSizing: "border-box",
       }}
     >
-      {/* Contenedor principal con fondo semitransparente para mejor lectura */}
       <div
         style={{
           backgroundColor: "rgba(255, 255, 255, 0.85)",
@@ -43,12 +42,12 @@ export default function HomePage() {
         }}
         className={openSans.className}
       >
-        {/* Título */}
+        {/* Título con tamaño mayor */}
         <img
           src="/titulo.png"
           alt="100 HALCONES"
           style={{
-            maxWidth: "280px",
+            maxWidth: "350px",  // aumento tamaño
             height: "auto",
             margin: "0 auto 1.5rem",
             display: "block",
@@ -56,10 +55,12 @@ export default function HomePage() {
           }}
         />
 
-        {/* Descripción */}
-        <Pregunta texto="Un juego interactivo en tiempo real con WebSocket + MQTT" />
+        {/* Descripción con texto más grande */}
+        <div style={{ fontSize: '1.6rem', fontWeight: '600', marginBottom: '2rem' }}>
+          <Pregunta texto="Un juego en tiempo real con WebSocket + MQTT" />
+        </div>
 
-        {/* Botones de selección */}
+        {/* Botones */}
         <div
           style={{
             display: "grid",
