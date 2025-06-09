@@ -178,9 +178,10 @@ export default function indexMesa() {
         }}
       />
 
-      <div style={{ marginBottom: "30px", width: "80%" }} className={openSans.className}>
-        <Pregunta texto={pregunta ? pregunta.texto : "Esperando pregunta..."} />
-      </div>
+      <div style={{ marginTop: "3rem", marginBottom: "30px", width: "80%" }} className={openSans.className}>
+  <Pregunta texto={pregunta ? pregunta.texto : "Esperando pregunta..."} />
+</div>
+
 
       <div style={{
         display: "flex",

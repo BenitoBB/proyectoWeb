@@ -9,13 +9,13 @@ import SalaEspera from '@/componentes/SalaEspera';
 export default function JugadorPage() {
   const searchParams = useSearchParams();
   const rol = searchParams.get('rol');
+  const [listo, setListo] = useState(false);
 
-  if (!rol || !['jugadorA', 'jugadorB'].includes(rol)) {
-    alert('Debes especificar el rol: jugadorA o jugadorB');
-    return null;
+  if (!rol || !['jugadorA', 'jugadorB'].includes(rol?.trim())) {
+    return <p>Debes especificar el rol: jugadorA o jugadorB</p>;
   }
 
-  const [listo, setListo] = useState(false);
+
 
   return (
     <div className="p-4">
