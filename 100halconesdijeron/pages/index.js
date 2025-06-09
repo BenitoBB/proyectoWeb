@@ -1,5 +1,3 @@
-//pages/index.js
-
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -17,54 +15,72 @@ export default function HomePage() {
   const router = useRouter();
 
   return (
-    
-    <div>
-      <div
-        style={{
+    <div
+      style={{
         minHeight: "100vh",
         backgroundImage: "url('/fondo.jpg')",
         backgroundRepeat: "repeat",
-        backgroundSize: "auto",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         display: "flex",
         flexDirection: "column",
         alignItems: "center", 
-        padding: "20px",
-      }}>
-
-        {/* Titulo del Juego 100HALCONESDIJERON */}
+        justifyContent: "center",
+        padding: "40px 20px",
+        boxSizing: "border-box",
+      }}
+    >
+      {/* Contenedor principal con fondo semitransparente para mejor lectura */}
+      <div
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 0.85)",
+          borderRadius: "1rem",
+          padding: "2rem 3rem",
+          maxWidth: "600px",
+          width: "100%",
+          boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+          textAlign: "center",
+        }}
+        className={openSans.className}
+      >
+        {/* Título */}
         <img
           src="/titulo.png"
-          alt="100 HALCONES DIJERON"
+          alt="100 HALCONES"
           style={{
-            display: "block",
-            margin: "0 auto",
-            marginTop: "2rem",
-            maxWidth: "90%",
+            maxWidth: "280px",
             height: "auto",
+            margin: "0 auto 1.5rem",
+            display: "block",
+            filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.3))",
           }}
         />
 
-        <div style={{ marginTop: "20px", width: "100%", textAlign: "center" }} className={openSans.className}>
-          <Pregunta texto="Un juego interactivo en tiempo real con WebSocket + MQTT" />
-        </div>
+        {/* Descripción */}
+        <Pregunta texto="Un juego interactivo en tiempo real con WebSocket + MQTT" />
 
+        {/* Botones de selección */}
         <div
           style={{
-            display: "flex",
-            flexDirection: "row", 
-            alignItems: "center", 
-            gap: "30px",          
-            marginTop: "30px",    
-            justifyContent: 'center', 
-            width: 'fit-content', 
-            maxWidth: '90%', 
-          }}>
-            <Rectangulo onClick={() => router.push('/jugador?name=JugadorA&rol=jugadorA')}>Jugador A</Rectangulo>
-            <Rectangulo onClick={() => router.push('/jugador?name=JugadorB&rol=jugadorB')}>Jugador B</Rectangulo>
-            <Rectangulo2 onClick={() => router.push('/admin')}>Administrador</Rectangulo2>
-            <Rectangulo2 onClick={() => router.push('/stats')}>Estadísticas</Rectangulo2>
-          </div>
-
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "20px",
+            marginTop: "2.5rem",
+          }}
+        >
+          <Rectangulo onClick={() => router.push('/jugador?name=JugadorA&rol=jugadorA')}>
+            Jugador A
+          </Rectangulo>
+          <Rectangulo onClick={() => router.push('/jugador?name=JugadorB&rol=jugadorB')}>
+            Jugador B
+          </Rectangulo>
+          <Rectangulo2 onClick={() => router.push('/admin')}>
+            Administrador
+          </Rectangulo2>
+          <Rectangulo2 onClick={() => router.push('/stats')}>
+            Estadísticas
+          </Rectangulo2>
+        </div>
       </div>
     </div>
   );

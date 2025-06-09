@@ -19,7 +19,7 @@ export default function JugadorPage() {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Sala de Espera</h1>
+      <h1 className="text-xl font-bold mb-4">Espera...</h1>
       <SalaEspera rol={rol} setListoGlobal={setListo} />
     </div>
   );
