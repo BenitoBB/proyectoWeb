@@ -1,18 +1,20 @@
 /**
- * Recibe la respuesta y el jugador.
- * Valida si la respuesta es la más famosa.
- * Publica el turno y el estado del tablero por MQTT.
- * Devuelve el resultado al frontend.
+ * Endpoint principal para procesar la respuesta de un jugador.
+ * Valida si la respuesta es correcta, gestiona strikes y modo robo,
+ * actualiza la base de datos y publica el nuevo estado por MQTT.
  */
 
+/* Importaciones necesarias */
 import db from "@/lib/db";
 import { mqttSendMessage } from "@/utils/serverMqtt";
 import { TOPICS } from "@/utils/constants";
 
 export default async function handler(req, res) {
+  /* 1. Validación y obtención de datos */
+  // 1.1 Solo acepta peticiones POST
   if (req.method !== "POST") return res.status(405).end();
 
-  // Si el body viene como string (por curl), parsea manualmente
+  // 1.2 Si el body viene como string (por ejemplo, desde curl), lo parsea
   let body = req.body;
   if (typeof body === "string") {
     try {
@@ -22,34 +24,36 @@ export default async function handler(req, res) {
     }
   }
 
+  // 1.3 Extrae los datos principales de la petición
   const { jugador, respuesta, preguntaId, rondaId } = body;
 
-  // 1. Leer el estado actual de la ronda
+  /* 2. Consulta de la Base de Datos */
+  // 2.1 Obtiene el estado actual de la ronda
   const [[ronda]] = await db.query(
     "SELECT * FROM Rondas WHERE ronda_id = ?",
     [rondaId]
   );
   if (!ronda) return res.status(404).json({ error: "Ronda no encontrada" });
 
-  // 2. Leer respuestas acertadas
+  // 2.2 Obtiene las respuestas ya acertadas en esta ronda
   const [acertadasRows] = await db.query(
     "SELECT respuesta_id FROM Respuestas_Acertadas WHERE ronda_id = ?",
     [rondaId]
   );
   const respuestasAcertadas = acertadasRows.map(r => r.respuesta_id);
 
-  // 3. Obtener respuestas válidas
+  // 2.3 Obtiene todas las respuestas válidas para la pregunta
   const [respuestas] = await db.query(
     "SELECT * FROM Respuestas WHERE pregunta_id = ? ORDER BY puntaje DESC",
     [preguntaId]
   );
 
-  // Mapear IDs a textos:
+  // 2.4 Mapea los IDs de respuestas acertadas a sus textos
   const respuestasAcertadasTextos = respuestas
     .filter(r => respuestasAcertadas.includes(r.respuesta_id))
     .map(r => r.texto_respuesta);
 
-  // 4. Buscar si la respuesta es válida y no ha sido acertada antes
+  // 2.5 Busca si la respuesta enviada es válida y no ha sido acertada antes
   const limpia = respuesta.trim().toLowerCase();
   let respuestaCorrecta = null;
   for (const r of respuestas) {
@@ -62,17 +66,18 @@ export default async function handler(req, res) {
     }
   }
 
+  // Variables auxiliares para el flujo de juego
   let esMasFamosa = false;
   let mensaje = "";
   let turnoActual = ronda.turno_actual;
 
-  // 5. Lógica de strikes y robo
+  // 3. Lógica de strikes y modo robo
   let strikesA = ronda.strikes_jugadorA;
   let strikesB = ronda.strikes_jugadorB;
   let puedeRobar = ronda.puede_robar;
   let robando = ronda.robando;
 
-  // Solo procesa si el jugador es el que tiene el turno
+  // 3.1 Solo procesa si el jugador es el que tiene el turno
   if (turnoActual && jugador !== turnoActual) {
     return res.status(200).json({
       acertada: false,
@@ -83,24 +88,18 @@ export default async function handler(req, res) {
     });
   }
 
-  // --- MODO ROBO ---
+  // 3.2 Si está activo el modo robo y el jugador que responde es el que puede robar
   if (puedeRobar && robando === jugador) {
     if (respuestaCorrecta) {
       mensaje = "¡Robaste los puntos!";
-      // Aquí puedes sumar puntos al jugador que robó y finalizar la ronda
-      // Resetear ronda, strikes, etc.
-      // Ejemplo: await resetTableroYTurno(rondaId);
     } else {
       mensaje = "No lograste robar. Los puntos se quedan con el otro jugador.";
-      // Aquí puedes finalizar la ronda y resetear strikes, etc.
-      // Ejemplo: await resetTableroYTurno(rondaId);
     }
-    // Aquí podrías resetear strikes y modo robo en la BD
-    // await db.query("UPDATE Rondas SET puede_robar = 0, robando = NULL WHERE ronda_id = ?", [rondaId]);
   }
-  // --- RESPUESTA CORRECTA ---
+
+  /* 4. Procesamiento de la respuesta */
   else if (respuestaCorrecta) {
-    // Registrar respuesta acertada en la BD
+    // 4.1 Si la respuesta es correcta y no ha sido acertada antes, la registra en la BD
     if (!respuestasAcertadas.includes(respuestaCorrecta.respuesta_id)) {
       await db.query(
         "INSERT INTO Respuestas_Acertadas (ronda_id, respuesta_id) VALUES (?, ?)",
@@ -108,7 +107,7 @@ export default async function handler(req, res) {
       );
     }
 
-    // Vuelve a consultar las respuestas acertadas
+    // 4.2 Vuelve a consultar las respuestas acertadas para actualizar el estado
     const [acertadasRows] = await db.query(
       "SELECT respuesta_id FROM Respuestas_Acertadas WHERE ronda_id = ?",
       [rondaId]
@@ -118,7 +117,7 @@ export default async function handler(req, res) {
       .filter(r => respuestasAcertadasIds.includes(r.respuesta_id))
       .map(r => r.texto_respuesta);
 
-    // Publica el tablero actualizado por MQTT
+    // 4.3 Publica el tablero actualizado por MQTT para que todos los clientes lo vean
     mqttSendMessage(TOPICS.ESTADO_TABLERO, JSON.stringify({
       respuestasAcertadas: respuestasAcertadasTextos,
       strikesA,
@@ -127,26 +126,27 @@ export default async function handler(req, res) {
       robando,
     }));
 
-    // --- AGREGA ESTO: PUBLICAR GANADOR SI YA SE ACERTARON TODAS LAS RESPUESTAS ---
+    // 4.4 Si ya se acertaron todas las respuestas, publica el ganador
     if (respuestasAcertadasIds.length === respuestas.length) {
       mqttSendMessage(TOPICS.GANADOR, jugador);
     }
 
-    // ¿Es la más famosa? (mayor puntaje)
+    // 4.5 Verifica si la respuesta es la más famosa (mayor puntaje)
     const maxPuntaje = Math.max(...respuestas.map(r => r.puntaje));
     esMasFamosa = respuestaCorrecta.puntaje === maxPuntaje;
 
-    // --- DUEL DE RAPIDEZ ---
+    /* 5. Duelo de rapidez */
+    // 5.1 Si la ronda está en duelo rápido
     if (ronda.duelo_rapido === 1) {
       if (esMasFamosa) {
-        // El primero acierta la más famosa, termina el duelo
+        // 5.1.1 Si acierta la más famosa, termina el duelo rápido
         await db.query(
           "UPDATE Rondas SET duelo_rapido = 0 WHERE ronda_id = ?",
           [rondaId]
         );
         mensaje = "¡Correcto! Es la respuesta más famosa. Sigues jugando.";
       } else {
-        // El turno NO cambia, solo termina el duelo rápido
+        // 5.1.2 Si acierta otra, también termina el duelo rápido
         await db.query(
           "UPDATE Rondas SET duelo_rapido = 0 WHERE ronda_id = ?",
           [rondaId]
@@ -154,31 +154,30 @@ export default async function handler(req, res) {
         mensaje = "¡Correcto! Sigues jugando.";
       }
     } else {
-      // --- FLUJO NORMAL DESPUÉS DEL DUELO ---
-      // SIEMPRE que acierte, sigue jugando, no importa si es la más famosa o no
+      // 5.2 Flujo normal después del duelo rápido
       mensaje = esMasFamosa
         ? "¡Correcto! Es la respuesta más famosa. Sigues jugando."
         : "¡Correcto! Sigues jugando.";
-      // NO cambies el turno aquí
+      // 5.2.1 El turno no cambia, el jugador sigue jugando
     }
   }
-  // --- RESPUESTA INCORRECTA ---
+  /* 6. Respuesta incorrecta */
   else {
-    // Suma strike
+    // 6.1 Suma un strike al jugador correspondiente
     if (jugador === "Jugador A") strikesA++;
     else strikesB++;
 
-    // Nunca más de 2 strikes
+    // 6.2 Limita los strikes a un máximo de 2
     if (strikesA > 2) strikesA = 2;
     if (strikesB > 2) strikesB = 2;
 
-    // Actualiza strikes en la BD
+    // 6.3 Actualiza los strikes en la base de datos
     await db.query(
       "UPDATE Rondas SET strikes_jugadorA = ?, strikes_jugadorB = ? WHERE ronda_id = ?",
       [strikesA, strikesB, rondaId]
     );
 
-    // Si llega a 2 strikes, activa modo robo y cambia el turno
+    // 6.4 Si llega a 2 strikes, activa modo robo y cambia el turno
     if ((jugador === "Jugador A" && strikesA >= 2) || (jugador === "Jugador B" && strikesB >= 2)) {
       puedeRobar = true;
       robando = jugador === "Jugador A" ? "Jugador B" : "Jugador A";
@@ -190,13 +189,14 @@ export default async function handler(req, res) {
       mensaje = `¡2 strikes! El otro jugador puede intentar robar.`;
     } else {
       mensaje = `Strike ${jugador === "Jugador A" ? strikesA : strikesB}. Sigue intentando.`;
-      // El turno NO cambia, el mismo jugador sigue intentando hasta 2 strikes
+      // El turno no cambia, el mismo jugador sigue intentando hasta 2 strikes
     }
   }
 
-  // Publicar el turno por MQTT (esto sí puede ir siempre)
+  /* 7. Publica el turno actual por MQTT para que todos los clientes se actualicen */
   mqttSendMessage(TOPICS.TURNO_RAPIDO, turnoActual);
 
+  // 7.1 Devuelve el resultado al frontend
   res.status(200).json({
     acertada: !!respuestaCorrecta,
     esMasFamosa,
@@ -206,8 +206,11 @@ export default async function handler(req, res) {
   });
 }
 
+/**
+ * Función auxiliar para limpiar el tablero y el turno al finalizar la ronda.
+ * Reinicia strikes, turno, modo robo y elimina respuestas acertadas en la BD.
+ */
 export async function resetTableroYTurno(rondaId) {
-  // Limpia los strikes, turno, modo robo y respuestas acertadas en la BD
   await db.query(
     `UPDATE Rondas SET 
       turno_actual = NULL, 
@@ -224,4 +227,3 @@ export async function resetTableroYTurno(rondaId) {
     [rondaId]
   );
 }
-

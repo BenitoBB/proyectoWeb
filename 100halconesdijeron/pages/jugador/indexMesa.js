@@ -1,39 +1,47 @@
-// pages/index2.js
-"use client"; // Ensure this is present for hooks like useState
+// pages/jugador/indexMesa.js
+"use client"; 
 
+/* 1. Importaciones y definición de estados */
 import React, { useState, useEffect, useRef } from "react";
-import Pregunta from "@/componentes/pregunta";
-import Tablero, { TableroItem } from "@/componentes/tablero";
-import Mesa from "@/componentes/Mesa";
-import { Open_Sans } from "next/font/google";
-import Rectangulo from "@/componentes/rectangulo";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useMQTT } from "@/utils/mqttClient";
-import { TOPICS } from "@/utils/constants";
-import { validarRespuesta } from "@/utils/validadorRespuestas";
-import Strike from "@/componentes/strike";
+import Pregunta from "@/componentes/pregunta"; // Componente para mostrar la pregunta actual
+import Tablero, { TableroItem } from "@/componentes/tablero"; // Componente para el tablero de respuestas
+import { Open_Sans } from "next/font/google"; // Fuente Open Sans
+import Rectangulo from "@/componentes/rectangulo"; // Componente para el botón rectangular
+import { useSearchParams, useRouter } from "next/navigation"; // Hook para obtener parámetros de búsqueda
+import { useMQTT } from "@/utils/mqttClient"; // Hook para manejar la conexión MQTT
+import { TOPICS } from "@/utils/constants"; // Constantes de tópicos MQTT
+import Strike from "@/componentes/strike"; // Componente para mostrar los strikes
 
+// Importar la fuente Open Sans //
 const openSans = Open_Sans({
   subsets: ["latin"],
   display: "swap",
 });
 
+/* Componente principal */
 export default function indexMesa() {
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams();  // Obtener los parámetros de búsqueda de la URL
   const rol = searchParams.get("rol"); // 'jugadorA' o 'jugadorB'
-  const nombreJugador = rol === "jugadorA" ? "Jugador A" : "Jugador B";
+  const nombreJugador = rol === "jugadorA" ? "Jugador A" : "Jugador B"; // Nombre del jugador basado en el rol
 
-  const [pregunta, setPregunta] = useState(null);
+  // Estado para manejar la pregunta, respuestas, turno, mensajes y más
+  const [pregunta, setPregunta] = useState(null); 
   const [respuestas, setRespuestas] = useState([]);
-  const [dueloTerminado, setDueloTerminado] = useState(false);
+
   const [turno, setTurno] = useState(null);
+
   const [respuestaInput, setRespuestaInput] = useState("");
+
   const [mensaje, setMensaje] = useState("");
+
   const [respuestasAcertadas, setRespuestasAcertadas] = useState([]);
+
   const [strikesA, setStrikesA] = useState(0);
   const [strikesB, setStrikesB] = useState(0);
+
   const [puedeRobar, setPuedeRobar] = useState(false);
   const [robando, setRobando] = useState(null);
+  
   const [rondaId, setRondaId] = useState(null);
   const [ganador, setGanador] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -41,7 +49,8 @@ export default function indexMesa() {
 
   const prevRondaId = useRef();
 
-  // Limpiar turno SOLO cuando cambia la ronda
+  /* 2. Suscrpciones MQTT y Efectos */
+  // 2.1 Limpiar turno SOLO cuando cambia la ronda
   useEffect(() => {
     if (rondaId && rondaId !== prevRondaId.current) {
       setTurno(null);
@@ -52,7 +61,7 @@ export default function indexMesa() {
     }
   }, [rondaId]);
 
-  // Escuchar el tablero
+  // 2.2 Escuchar el tablero
   useMQTT(TOPICS.ESTADO_TABLERO, (payload) => {
     const data = JSON.parse(payload);
     setRespuestasAcertadas(data.respuestasAcertadas);
@@ -61,7 +70,6 @@ export default function indexMesa() {
     setPuedeRobar(data.puedeRobar || false);
     setRobando(data.robando || null);
 
-    // Si el tablero está limpio, reinicia el estado local
     if (
       Array.isArray(data.respuestasAcertadas) &&
       data.respuestasAcertadas.length === 0 &&
@@ -71,24 +79,24 @@ export default function indexMesa() {
       setMensaje("");
       setRespuestaInput("");
       setJuegoFinalizado(false);
-      // NO pongas setTurno(null) aquí
     }
   });
 
-  // Escuchar el turno
+  /* 3. Lógica de interacción del jugador */
+  // 3.1 Escuchar el turno
   useMQTT(TOPICS.TURNO_RAPIDO, (payload) => {
     setTurno(payload);
   });
 
-  // Suscribirse al tópico de pregunta actual
+  // 3.2 Suscribirse al tópico de pregunta actual
   const { sendMessage } = useMQTT(TOPICS.PREGUNTA_ACTUAL, (payload) => {
     const data = JSON.parse(payload);
     setPregunta(data.pregunta);
     setRespuestas(data.respuestas);
-    setRondaId(data.rondaId); // <-- esto debe ejecutarse
+    setRondaId(data.rondaId); 
   });
 
-  // Escuchar el ganador
+  // 3.3 Escuchar el ganador
   useMQTT(TOPICS.GANADOR, (payload) => {
     if (payload === "Juego finalizado") {
       setJuegoFinalizado(true);
@@ -105,11 +113,11 @@ export default function indexMesa() {
     }
   });
 
-  // Lógica para el duelo de rapidez
+  // 3.4 Lógica para el duelo de rapidez
   const handleDueloClick = async () => {
     if (!turno && rondaId) {
-      const res = await fetch("/api/dueloRapido", {
-        method: "POST",
+      const res = await fetch("/api/dueloRapido", { // Endpoint para manejar el duelo rápido
+        method: "POST", // Método POST para enviar datos
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jugador: nombreJugador, rondaId }),
       });
@@ -118,17 +126,17 @@ export default function indexMesa() {
     }
   };
 
-  // Enviar respuesta
+  // 3.5 Enviar respuesta
   const handleResponder = async () => {
     if (!respuestaInput.trim() || turno !== nombreJugador) return;
-    const res = await fetch("/api/responder", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch("/api/responder", { // Endpoint para manejar respuestas
+      method: "POST", // Método POST para enviar datos
+      headers: { "Content-Type": "application/json" }, 
       body: JSON.stringify({
         jugador: nombreJugador,
         respuesta: respuestaInput,
         preguntaId: pregunta.id,
-        rondaId: rondaId, // falta rondaId aquí
+        rondaId: rondaId, 
       }),
     });
     const data = await res.json();
@@ -136,18 +144,22 @@ export default function indexMesa() {
     setRespuestaInput("");
   };
 
+  // 3.6 Limpiar mensajes y respuestas al cambiar de turno
   useEffect(() => {
     setMensaje("");
     setRespuestaInput("");
   }, [turno]);
 
+  // 3.7 Guardar el rol en sessionStorage para persistencia
   useEffect(() => {
     if (rol) sessionStorage.setItem("rol", rol);
   }, [rol]);
 
+  // 3.8 Recuperar el rol guardado al cargar la página
   const savedRol =
     typeof window !== "undefined" ? sessionStorage.getItem("rol") : null;
 
+  // 3.9 Mensaje de consola para depuración
   console.log(
     "nombreJugador:",
     nombreJugador,
@@ -164,6 +176,7 @@ export default function indexMesa() {
     respuestas.map((r) => r.texto_respuesta)
   );
 
+  /* 4. Renderizado del componente */
   return (
     <div
       style={{

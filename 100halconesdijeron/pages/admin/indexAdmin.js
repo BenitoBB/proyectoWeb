@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Pregunta from "@/componentes/pregunta";     
-import Tablero, { TableroItem } from "@/componentes/tablero"; 
 import Rectangulo from "@/componentes/rectangulo"; 
 import { Open_Sans } from 'next/font/google'; 
 import { useMQTT } from "@/utils/mqttClient";
