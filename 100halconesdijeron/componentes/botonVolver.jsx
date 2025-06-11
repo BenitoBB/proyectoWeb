@@ -1,25 +1,19 @@
-// componentes/BotonVolver.js (assuming this is the file name and path)
 'use client';
+import { useRouter } from 'next/router';
+import React from 'react';
 
-import { useRouter } from 'next/router'; // Import useRouter from next/router
-import React from 'react'; // It's good practice to import React when using JSX
-
-export default function BotonVolver({ children, onClick, style = {} }) {
-  const router = useRouter(); // Initialize the router
+export default function BotonVolver({ children = 'Volver', onClick, style = {} }) {
+  const router = useRouter();
 
   const handleButtonClick = (event) => {
-    // If an onClick prop is provided, call it first
-    if (onClick) {
-      onClick(event);
-    }
-    // Then, navigate to the index page
-    router.push('/'); // This navigates to the root (index.js is the default route for '/')
+    if (onClick) onClick(event);
+    router.push('/');
   };
 
   return (
     <button
       type="button"
-      onClick={handleButtonClick} // Use our new handleButtonClick
+      onClick={handleButtonClick}
       style={{
         background: "#DCE133",
         borderRadius: "40px",
@@ -32,14 +26,17 @@ export default function BotonVolver({ children, onClick, style = {} }) {
         boxSizing: "border-box",
         cursor: "pointer",
         outline: "none",
-        transition: "transform 0.1s",
+        transition: "all 0.2s ease",
+        boxShadow: "2px 2px 8px rgba(0,0,0,0.3)",
         ...style,
       }}
       onMouseDown={e => e.currentTarget.style.transform = "scale(0.97)"}
       onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}
       onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+      onMouseOver={e => e.currentTarget.style.background = "#C5C000"}
+      onMouseOut={e => e.currentTarget.style.background = "#DCE133"}
     >
-      <span style={{ color: "#fff", fontWeight: "bold", fontSize: "1.3rem" }}>
+      <span style={{ color: "#111", fontWeight: "bold", fontSize: "1.3rem" }}>
         {children}
       </span>
     </button>
